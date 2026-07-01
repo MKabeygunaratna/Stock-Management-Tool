@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model User {
+  id           Int             @id @default(autoincrement())
+  username     String          @unique
+  passwordHash String
+  fullName     String
+  role         Role            @default(STAFF)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  movements    StockMovement[]
+  invoices     Invoice[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id           Int           @id @default(autoincrement())
+  tokenHash    String        @unique
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id])
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById Int?          @unique
+  replacedBy   RefreshToken? @relation("TokenChain", fields: [replacedById], references: [id])
+  replacedFrom RefreshToken? @relation("TokenChain")
+  createdAt    DateTime      @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           Int             @id @default(autoincrement())
+  partNumber   String          @unique
+  name         String
+  description  String?
+  unit         String          @default("pcs")
+  brandId      Int
+  brand        Brand           @relation(fields: [brandId], references: [id])
+  categoryId   Int?
+  category     Category?       @relation(fields: [categoryId], references: [id])
+  costPrice    Decimal         @default(0) @db.Decimal(12, 2)
+  sellingPrice Decimal         @default(0) @db.Decimal(12, 2)
+  currentStock Int             @default(0)
+  reorderLevel Int             @default(5)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  movements    StockMovement[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model StockMovement {
+  id         Int          @id @default(autoincrement())
+  productId  Int
+  product    Product      @relation(fields: [productId], references: [id])
+  userId     Int
+  user       User         @relation(fields: [userId], references: [id])
+  type       MovementType
+  quantity   Int
+  unitPrice  Decimal      @default(0) @db.Decimal(12, 2)
+  reason     String?
+  reference  String?
+  stockAfter Int
+  invoiceId  Int?
+  invoice    Invoice?     @relation(fields: [invoiceId], references: [id])
+  createdAt  DateTime     @default(now())
+
+  @@index([productId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([invoiceId])
+  @@map("stock_movements")
+}
+
+model Invoice {
+  id            Int             @id @default(autoincrement())
+  invoiceNumber String          @unique
+  buyerName     String
+  buyerCompany  String?
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id])
+  totalAmount   Decimal         @default(0) @db.Decimal(12, 2)
+  createdAt     DateTime        @default(now())
+  movements     StockMovement[]
+
+  @@map("invoices")
+}
