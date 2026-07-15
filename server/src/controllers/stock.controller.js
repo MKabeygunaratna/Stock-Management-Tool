@@ -44,7 +44,7 @@ const stockIn = async (req, res, next) => {
 
 const stockOut = async (req, res, next) => {
   try {
-    const { buyerName, buyerCompany, reference, notes, items } = req.body;
+    const { buyerName, buyerCompany, customerId, reference, notes, items } = req.body;
 
     if (!buyerName) {
       throw new AppError(400, 'Buyer name is required');
@@ -78,11 +78,20 @@ const stockOut = async (req, res, next) => {
         products.set(item.productId, product);
       }
 
+      let customer = null;
+      if (customerId) {
+        customer = await tx.customer.findUnique({ where: { id: Number(customerId) } });
+        if (!customer || !customer.isActive) {
+          throw new AppError(404, 'Customer not found');
+        }
+      }
+
       const draftInvoice = await tx.invoice.create({
         data: {
           invoiceNumber: 'PENDING',
           buyerName,
           buyerCompany: buyerCompany || null,
+          customerId: customer?.id || null,
           userId: req.user.id,
           totalAmount: 0,
         },
@@ -124,6 +133,7 @@ const stockOut = async (req, res, next) => {
         include: {
           movements: { include: { product: { include: { brand: true } } } },
           user: { select: { id: true, username: true, fullName: true } },
+          customer: true,
         },
       });
     }, { timeout: 20000, maxWait: 10000 }));

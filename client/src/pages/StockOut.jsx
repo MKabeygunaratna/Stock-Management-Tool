@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PackageMinus, FileSpreadsheet, Download } from 'lucide-react';
 import { getProducts } from '../api/products.api';
+import { getCustomers } from '../api/customers.api';
 import { stockOut } from '../api/stock.api';
 import { downloadInvoicePdf } from '../api/invoices.api';
 import { formatCurrency } from '../utils/currency';
@@ -26,6 +27,10 @@ export default function StockOut() {
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
 
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerOptions, setCustomerOptions] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -39,6 +44,33 @@ export default function StockOut() {
     }, 250);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    if (!customerSearch) {
+      setCustomerOptions([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      getCustomers({ search: customerSearch, limit: 10 })
+        .then((data) => setCustomerOptions(data.items))
+        .catch(() => {});
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [customerSearch]);
+
+  const selectCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setBuyerName(customer.name);
+    setBuyerCompany(customer.company || '');
+    setCustomerSearch('');
+    setCustomerOptions([]);
+  };
+
+  const clearCustomer = () => {
+    setSelectedCustomer(null);
+    setBuyerName('');
+    setBuyerCompany('');
+  };
 
   const addToCart = (product, quantity = 1) => {
     setSearch('');
@@ -70,6 +102,8 @@ export default function StockOut() {
     setBuyerCompany('');
     setReference('');
     setNotes('');
+    setSelectedCustomer(null);
+    setCustomerSearch('');
   };
 
   const handleDownloadTemplate = async () => {
@@ -161,6 +195,7 @@ export default function StockOut() {
       const invoice = await stockOut({
         buyerName,
         buyerCompany,
+        customerId: selectedCustomer?.id,
         reference,
         notes,
         items: cart.map((line) => ({ productId: line.product.id, quantity: line.quantity })),
@@ -303,12 +338,51 @@ export default function StockOut() {
 
         <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:sticky lg:top-4">
           <div>
+            <label className={labelClass}>Customer (optional)</label>
+            {selectedCustomer ? (
+              <div className="rounded-md border border-input bg-surface-muted px-3 py-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-foreground">{selectedCustomer.name}</span>
+                  <button type="button" onClick={clearCustomer} className="text-xs text-amber-500 hover:underline">Change</button>
+                </div>
+                {selectedCustomer.company && <div className="text-xs text-muted">{selectedCustomer.company}</div>}
+                <div className={`mt-1 text-xs font-medium ${selectedCustomer.balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-muted'}`}>
+                  Current balance owed: {formatCurrency(selectedCustomer.balance)}
+                </div>
+              </div>
+            ) : (
+              <>
+                <input
+                  placeholder="Search customer for credit sale..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  className={inputClass}
+                />
+                {customerSearch && customerOptions.length > 0 && (
+                  <div className="mt-1 max-h-40 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
+                    {customerOptions.map((c) => (
+                      <button
+                        type="button"
+                        key={c.id}
+                        onClick={() => selectCustomer(c)}
+                        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-muted"
+                      >
+                        {c.name}{c.company ? ` (${c.company})` : ''}
+                        <span className="ml-2 text-xs text-muted">owes {formatCurrency(c.balance)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <div>
             <label className={labelClass}>Buyer Name</label>
-            <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} className={inputClass} required />
+            <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} className={inputClass} required disabled={!!selectedCustomer} />
           </div>
           <div>
             <label className={labelClass}>Buyer Company (optional)</label>
-            <input value={buyerCompany} onChange={(e) => setBuyerCompany(e.target.value)} className={inputClass} />
+            <input value={buyerCompany} onChange={(e) => setBuyerCompany(e.target.value)} className={inputClass} disabled={!!selectedCustomer} />
           </div>
           <div>
             <label className={labelClass}>Reference (invoice/PO number)</label>

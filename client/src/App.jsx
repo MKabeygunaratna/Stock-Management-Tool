@@ -13,6 +13,7 @@ import StockOut from './pages/StockOut';
 import StockHistory from './pages/StockHistory';
 import Invoices from './pages/Invoices';
 import Purchases from './pages/Purchases';
+import Customers from './pages/Customers';
 import Brands from './pages/Brands';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
@@ -36,6 +37,7 @@ export default function App() {
                   <Route path="/stock-history" element={<StockHistory />} />
                   <Route path="/invoices" element={<Invoices />} />
                   <Route path="/purchases" element={<Purchases />} />
+                  <Route path="/customers" element={<Customers />} />
 
                   <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                     <Route path="/brands" element={<Brands />} />

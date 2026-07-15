@@ -9,6 +9,7 @@ import {
   Tag,
   Layers,
   Users as UsersIcon,
+  Users2,
   Wallet,
   ShoppingCart,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/stock-history", label: "Stock History", icon: History },
   { to: "/invoices", label: "Invoices", icon: Receipt },
   { to: "/purchases", label: "Purchases", icon: ShoppingCart },
+  { to: "/customers", label: "Customers", icon: Users2 },
 ];
 
 const adminItems = [

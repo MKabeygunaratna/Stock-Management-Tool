@@ -5,8 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>client</title>
-    <script type="module" crossorigin src="/assets/index-kpfTaSt0.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DILb-tNB.css">
+    <script>
+      (function () {
+        var stored = localStorage.getItem('theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CXl5QECh.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CPwrmxFA.css">
   </head>
   <body>
     <div id="root"></div>
