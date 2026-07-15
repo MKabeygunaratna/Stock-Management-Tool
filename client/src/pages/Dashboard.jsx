@@ -3,30 +3,36 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { LayoutDashboard, Package, Wallet, AlertTriangle, TrendingUp, Receipt, History } from 'lucide-react';
 import { getDashboardSummary } from '../api/dashboard.api';
 import { formatCurrency } from '../utils/currency';
+import { useTheme } from '../hooks/useTheme';
 import PageHeader from '../components/common/PageHeader';
 import Spinner from '../components/common/Spinner';
 import EmptyState from '../components/common/EmptyState';
 
 function StatCard({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-zinc-500">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-muted">
         <Icon size={14} />
         <p className="text-sm">{label}</p>
       </div>
-      <p className="mt-1 text-2xl font-semibold text-zinc-100">{value}</p>
+      <p className="mt-1 text-2xl font-semibold text-foreground">{value}</p>
     </div>
   );
 }
 
-const tooltipStyle = {
-  contentStyle: { backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: 8, color: '#f4f4f5' },
-  labelStyle: { color: '#f4f4f5' },
-};
+const getTooltipStyle = (theme) => ({
+  contentStyle: theme === 'dark'
+    ? { backgroundColor: '#111827', border: '1px solid #3f3f46', borderRadius: 8, color: '#f4f4f5' }
+    : { backgroundColor: '#ffffff', border: '1px solid #e4e4e7', borderRadius: 8, color: '#18181b' },
+  labelStyle: { color: theme === 'dark' ? '#f4f4f5' : '#18181b' },
+});
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const { theme } = useTheme();
+  const tooltipStyle = getTooltipStyle(theme);
+  const axisStroke = theme === 'dark' ? '#a1a1aa' : '#52525b';
 
   useEffect(() => {
     getDashboardSummary()
@@ -38,7 +44,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <PageHeader icon={LayoutDashboard} title="Dashboard" subtitle="Overview of stock and sales" />
 
-      {error && <p className="text-red-400">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
       {!error && !data && <Spinner label="Loading dashboard..." />}
 
       {data && (
@@ -52,26 +58,26 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-              <h2 className="mb-1 text-sm font-semibold text-zinc-200">Stock Value by Brand</h2>
-              <p className="mb-3 text-xs text-zinc-500">Cost-basis value of inventory currently on hand</p>
+            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">Stock Value by Brand</h2>
+              <p className="mb-3 text-xs text-muted">Cost-basis value of inventory currently on hand</p>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={data.stockByBrand}>
-                  <XAxis dataKey="brandName" fontSize={12} stroke="#71717a" />
-                  <YAxis fontSize={12} stroke="#71717a" />
+                  <XAxis dataKey="brandName" fontSize={12} stroke={axisStroke} />
+                  <YAxis fontSize={12} stroke={axisStroke} />
                   <Tooltip formatter={(value) => formatCurrency(value)} {...tooltipStyle} />
                   <Bar dataKey="totalValue" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-              <h2 className="mb-1 text-sm font-semibold text-zinc-200">Sales Revenue by Brand</h2>
-              <p className="mb-3 text-xs text-zinc-500">Money earned from stock-outs (invoiced sales)</p>
+            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">Sales Revenue by Brand</h2>
+              <p className="mb-3 text-xs text-muted">Money earned from stock-outs (invoiced sales)</p>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={data.salesByBrand}>
-                  <XAxis dataKey="brandName" fontSize={12} stroke="#71717a" />
-                  <YAxis fontSize={12} stroke="#71717a" />
+                  <XAxis dataKey="brandName" fontSize={12} stroke={axisStroke} />
+                  <YAxis fontSize={12} stroke={axisStroke} />
                   <Tooltip formatter={(value) => formatCurrency(value)} {...tooltipStyle} />
                   <Bar dataKey="totalRevenue" fill="#10b981" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -79,14 +85,14 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900 shadow-sm">
-            <h2 className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3 text-sm font-semibold text-zinc-200">
-              <History size={14} className="text-zinc-500" />
+          <div className="rounded-lg border border-border bg-card shadow-sm">
+            <h2 className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
+              <History size={14} className="text-muted" />
               Recent Movements
             </h2>
             <div className="overflow-x-auto"><table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800 text-left text-zinc-500">
+                <tr className="border-b border-border text-left text-muted">
                   <th className="px-4 py-2 font-medium">Date</th>
                   <th className="px-4 py-2 font-medium">Part</th>
                   <th className="px-4 py-2 font-medium">Brand</th>
@@ -97,15 +103,15 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {data.recentMovements.map((m) => (
-                  <tr key={m.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-800/40">
-                    <td className="px-4 py-2 text-zinc-500">{new Date(m.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-2 text-zinc-200">{m.product.name}</td>
-                    <td className="px-4 py-2 text-zinc-300">{m.product.brand.name}</td>
+                  <tr key={m.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+                    <td className="px-4 py-2 text-muted">{new Date(m.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-2 text-foreground">{m.product.name}</td>
+                    <td className="px-4 py-2 text-muted">{m.product.brand.name}</td>
                     <td className="px-4 py-2">
-                      <span className={m.type === 'IN' ? 'text-emerald-400' : 'text-red-400'}>{m.type}</span>
+                      <span className={m.type === 'IN' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>{m.type}</span>
                     </td>
-                    <td className="px-4 py-2 text-zinc-300">{m.quantity}</td>
-                    <td className="px-4 py-2 text-zinc-500">{m.user.fullName}</td>
+                    <td className="px-4 py-2 text-muted">{m.quantity}</td>
+                    <td className="px-4 py-2 text-muted">{m.user.fullName}</td>
                   </tr>
                 ))}
                 {data.recentMovements.length === 0 && (

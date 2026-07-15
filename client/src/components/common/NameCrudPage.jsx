@@ -1,49 +1,52 @@
-import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
-import Modal from './Modal';
-import ConfirmDialog from './ConfirmDialog';
-import PageHeader from './PageHeader';
-import Button from './Button';
-import EmptyState from './EmptyState';
+import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import Modal from "./Modal";
+import ConfirmDialog from "./ConfirmDialog";
+import PageHeader from "./PageHeader";
+import Button from "./Button";
+import EmptyState from "./EmptyState";
 
 export default function NameCrudPage({ title, icon, api }) {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === "ADMIN";
 
   const [items, setItems] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [name, setName] = useState('');
-  const [formError, setFormError] = useState('');
+  const [name, setName] = useState("");
+  const [formError, setFormError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = () => {
-    api.list().then(setItems).catch(() => setError(`Failed to load ${title.toLowerCase()}`));
+    api
+      .list()
+      .then(setItems)
+      .catch(() => setError(`Failed to load ${title.toLowerCase()}`));
   };
 
   useEffect(load, []);
 
   const openCreate = () => {
     setEditing(null);
-    setName('');
-    setFormError('');
+    setName("");
+    setFormError("");
     setModalOpen(true);
   };
 
   const openEdit = (item) => {
     setEditing(item);
     setName(item.name);
-    setFormError('');
+    setFormError("");
     setModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError('');
+    setFormError("");
     try {
       if (editing) {
         await api.update(editing.id, { name });
@@ -55,7 +58,7 @@ export default function NameCrudPage({ title, icon, api }) {
       setModalOpen(false);
       load();
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Failed to save');
+      setFormError(err.response?.data?.message || "Failed to save");
     }
   };
 
@@ -71,31 +74,48 @@ export default function NameCrudPage({ title, icon, api }) {
       <PageHeader
         icon={icon}
         title={title}
-        action={isAdmin && (
-          <Button onClick={openCreate}>
-            <Plus size={16} /> Add {title.slice(0, -1)}
-          </Button>
-        )}
+        action={
+          isAdmin && (
+            <Button onClick={openCreate}>
+              <Plus size={16} /> Add {title.slice(0, -1)}
+            </Button>
+          )
+        }
       />
 
-      {error && <p className="text-red-400">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 shadow-sm">
+      <div className="rounded-lg border border-border bg-card/95 shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 text-left text-zinc-500">
+            <tr className="border-b border-border text-left text-muted">
               <th className="px-4 py-2 font-medium">Name</th>
               {isAdmin && <th className="px-4 py-2 font-medium">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-800/40">
-                <td className="px-4 py-2 text-zinc-100">{item.name}</td>
+              <tr
+                key={item.id}
+                className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40"
+              >
+                <td className="px-4 py-2 text-foreground">
+                  {item.name}
+                </td>
                 {isAdmin && (
                   <td className="px-4 py-2">
-                    <button onClick={() => openEdit(item)} className="mr-3 text-amber-500 hover:underline">Edit</button>
-                    <button onClick={() => setDeleteTarget(item)} className="text-red-400 hover:underline">Delete</button>
+                    <button
+                      onClick={() => openEdit(item)}
+                      className="mr-3 text-amber-500 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(item)}
+                      className="text-red-600 dark:text-red-400 hover:underline"
+                    >
+                      Delete
+                    </button>
                   </td>
                 )}
               </tr>
@@ -103,7 +123,10 @@ export default function NameCrudPage({ title, icon, api }) {
             {items.length === 0 && (
               <tr>
                 <td colSpan={isAdmin ? 2 : 1}>
-                  <EmptyState icon={icon} message={`No ${title.toLowerCase()} yet`} />
+                  <EmptyState
+                    icon={icon}
+                    message={`No ${title.toLowerCase()} yet`}
+                  />
                 </td>
               </tr>
             )}
@@ -111,22 +134,38 @@ export default function NameCrudPage({ title, icon, api }) {
         </table>
       </div>
 
-      <Modal open={modalOpen} title={editing ? `Edit ${title.slice(0, -1)}` : `Add ${title.slice(0, -1)}`} onClose={() => setModalOpen(false)}>
+      <Modal
+        open={modalOpen}
+        title={
+          editing ? `Edit ${title.slice(0, -1)}` : `Add ${title.slice(0, -1)}`
+        }
+        onClose={() => setModalOpen(false)}
+      >
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError && (
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{formError}</div>
+            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
+              {formError}
+            </div>
           )}
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-300">Name</label>
+            <label className="mb-1 block text-sm font-medium text-muted">
+              Name
+            </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               required
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setModalOpen(false)}
+            >
+              Cancel
+            </Button>
             <Button type="submit">Save</Button>
           </div>
         </form>

@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
-import { PackageMinus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { PackageMinus, FileSpreadsheet, Download } from 'lucide-react';
 import { getProducts } from '../api/products.api';
 import { stockOut } from '../api/stock.api';
 import { downloadInvoicePdf } from '../api/invoices.api';
 import { formatCurrency } from '../utils/currency';
+import { parseStockOutWorkbook, downloadStockOutTemplate } from '../utils/excelImport';
 import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/common/PageHeader';
 import Button from '../components/common/Button';
 
 const inputClass =
-  'w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
-const labelClass = 'mb-1 block text-sm font-medium text-zinc-300';
+  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
+const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 export default function StockOut() {
   const { showToast } = useToast();
+  const fileInputRef = useRef(null);
+
   const [search, setSearch] = useState('');
   const [options, setOptions] = useState([]);
   const [cart, setCart] = useState([]);
@@ -25,6 +28,8 @@ export default function StockOut() {
 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,17 +40,17 @@ export default function StockOut() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1) => {
     setSearch('');
     setOptions([]);
     setCart((prev) => {
       const existing = prev.find((line) => line.product.id === product.id);
       if (existing) {
         return prev.map((line) =>
-          line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line
+          line.product.id === product.id ? { ...line, quantity: line.quantity + quantity } : line
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity }];
     });
   };
 
@@ -65,6 +70,67 @@ export default function StockOut() {
     setBuyerCompany('');
     setReference('');
     setNotes('');
+  };
+
+  const handleDownloadTemplate = async () => {
+    setDownloadingTemplate(true);
+    try {
+      await downloadStockOutTemplate();
+    } catch {
+      showToast('Failed to generate the template file', 'error');
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setError('');
+    setImporting(true);
+    try {
+      const rows = await parseStockOutWorkbook(file);
+      if (rows.length === 0) {
+        showToast('The file had no part rows to import', 'error');
+        return;
+      }
+
+      let matched = 0;
+      const notFound = [];
+      const invalidQty = [];
+
+      for (const row of rows) {
+        if (!row.partNumber) continue;
+        if (!row.quantity || row.quantity <= 0) {
+          invalidQty.push(row.partNumber);
+          continue;
+        }
+        const data = await getProducts({ search: row.partNumber, limit: 10 });
+        const product = data.items.find(
+          (p) => p.partNumber.toLowerCase() === row.partNumber.toLowerCase()
+        );
+        if (!product) {
+          notFound.push(row.partNumber);
+          continue;
+        }
+        addToCart(product, row.quantity);
+        matched += 1;
+      }
+
+      const problems = [];
+      if (notFound.length) problems.push(`${notFound.length} part number(s) not found: ${notFound.join(', ')}`);
+      if (invalidQty.length) problems.push(`${invalidQty.length} row(s) had a missing/invalid quantity: ${invalidQty.join(', ')}`);
+
+      if (matched > 0) showToast(`Imported ${matched} part${matched === 1 ? '' : 's'} from the file`);
+      if (problems.length) setError(problems.join('. '));
+      if (matched === 0 && problems.length === 0) showToast('No matching rows found in the file', 'error');
+    } catch (err) {
+      setError(err.message || 'Failed to read the uploaded file');
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleConfirm = async (e) => {
@@ -113,83 +179,129 @@ export default function StockOut() {
     <div className="space-y-4">
       <PageHeader icon={PackageMinus} title="Stock Out" subtitle="Issue parts and generate an invoice" />
 
-      <form onSubmit={handleConfirm} className="max-w-2xl space-y-4 rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
+      <form onSubmit={handleConfirm} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
         {error && (
-          <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>
+          <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 lg:col-span-3">
+            {error}
+          </div>
         )}
 
-        <div>
-          <label className={labelClass}>Add Part</label>
-          <input
-            placeholder="Search by name or part number"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={inputClass}
-          />
-          {search && options.length > 0 && (
-            <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-zinc-700 bg-zinc-900 shadow-lg">
-              {options.map((p) => (
-                <button
-                  type="button"
-                  key={p.id}
-                  onClick={() => addToCart(p)}
-                  className="block w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
-                >
-                  <span className="font-medium">{p.partNumber}</span> - {p.name}
-                  <span className="ml-2 text-xs text-zinc-500">({p.brand.name}, stock: {p.currentStock})</span>
-                </button>
-              ))}
+        <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:col-span-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <label className={labelClass}>Add Part</label>
+              <input
+                placeholder="Search by name or part number"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={inputClass}
+              />
+              {search && options.length > 0 && (
+                <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
+                  {options.map((p) => (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onClick={() => addToCart(p)}
+                      className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-muted"
+                    >
+                      <span className="font-medium">{p.partNumber}</span> - {p.name}
+                      <span className="ml-2 text-xs text-muted">({p.brand.name}, stock: {p.currentStock})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={importing}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <FileSpreadsheet size={16} />
+                {importing ? 'Importing...' : 'Upload Excel'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={downloadingTemplate}
+                onClick={handleDownloadTemplate}
+              >
+                <Download size={16} />
+                Template
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted">
+            Excel file needs a <strong>Part Number</strong> column and a <strong>Qty</strong> column (or just
+            part number in column A and quantity in column B). Not sure of the format? Download the{' '}
+            <button
+              type="button"
+              onClick={handleDownloadTemplate}
+              disabled={downloadingTemplate}
+              className="text-amber-500 hover:underline"
+            >
+              template file
+            </button>{' '}
+            first. Matched rows are added to the cart below for review.
+          </p>
+
+          {cart.length > 0 && (
+            <div className="rounded-md border border-border">
+              <div className="overflow-x-auto"><table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-muted">
+                    <th className="px-3 py-2 font-medium">Part</th>
+                    <th className="px-3 py-2 font-medium">Qty</th>
+                    <th className="px-3 py-2 font-medium">Unit Price</th>
+                    <th className="px-3 py-2 font-medium">Line Total</th>
+                    <th className="px-3 py-2 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.map((line) => (
+                    <tr key={line.product.id} className="border-b border-border/60 last:border-0">
+                      <td className="px-3 py-2 text-foreground">
+                        {line.product.partNumber} - {line.product.name}
+                        <div className="text-xs text-muted">Available: {line.product.currentStock} {line.product.unit}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="number"
+                          min="1"
+                          max={line.product.currentStock}
+                          value={line.quantity}
+                          onChange={(e) => updateQuantity(line.product.id, Number(e.target.value))}
+                          className="w-20 rounded-md border border-input bg-surface-muted px-2 py-1 text-sm text-foreground focus:border-amber-500 focus:outline-none"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-muted">{formatCurrency(line.product.sellingPrice)}</td>
+                      <td className="px-3 py-2 text-muted">{formatCurrency(line.quantity * Number(line.product.sellingPrice))}</td>
+                      <td className="px-3 py-2">
+                        <button type="button" onClick={() => removeLine(line.product.id)} className="text-red-600 dark:text-red-400 hover:underline">
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table></div>
+              <div className="border-t border-border px-3 py-2 text-right text-sm font-semibold text-foreground">
+                Grand Total: {formatCurrency(grandTotal)}
+              </div>
             </div>
           )}
         </div>
 
-        {cart.length > 0 && (
-          <div className="rounded-md border border-zinc-800">
-            <div className="overflow-x-auto"><table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-800 text-left text-zinc-500">
-                  <th className="px-3 py-2 font-medium">Part</th>
-                  <th className="px-3 py-2 font-medium">Qty</th>
-                  <th className="px-3 py-2 font-medium">Unit Price</th>
-                  <th className="px-3 py-2 font-medium">Line Total</th>
-                  <th className="px-3 py-2 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((line) => (
-                  <tr key={line.product.id} className="border-b border-zinc-800/60 last:border-0">
-                    <td className="px-3 py-2 text-zinc-100">
-                      {line.product.partNumber} - {line.product.name}
-                      <div className="text-xs text-zinc-500">Available: {line.product.currentStock} {line.product.unit}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <input
-                        type="number"
-                        min="1"
-                        max={line.product.currentStock}
-                        value={line.quantity}
-                        onChange={(e) => updateQuantity(line.product.id, Number(e.target.value))}
-                        className="w-20 rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
-                      />
-                    </td>
-                    <td className="px-3 py-2 text-zinc-300">{formatCurrency(line.product.sellingPrice)}</td>
-                    <td className="px-3 py-2 text-zinc-300">{formatCurrency(line.quantity * Number(line.product.sellingPrice))}</td>
-                    <td className="px-3 py-2">
-                      <button type="button" onClick={() => removeLine(line.product.id)} className="text-red-400 hover:underline">
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table></div>
-            <div className="border-t border-zinc-800 px-3 py-2 text-right text-sm font-semibold text-zinc-100">
-              Grand Total: {formatCurrency(grandTotal)}
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:sticky lg:top-4">
           <div>
             <label className={labelClass}>Buyer Name</label>
             <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} className={inputClass} required />
@@ -198,9 +310,6 @@ export default function StockOut() {
             <label className={labelClass}>Buyer Company (optional)</label>
             <input value={buyerCompany} onChange={(e) => setBuyerCompany(e.target.value)} className={inputClass} />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className={labelClass}>Reference (invoice/PO number)</label>
             <input value={reference} onChange={(e) => setReference(e.target.value)} className={inputClass} />
@@ -209,11 +318,22 @@ export default function StockOut() {
             <label className={labelClass}>Notes</label>
             <input value={notes} onChange={(e) => setNotes(e.target.value)} className={inputClass} />
           </div>
-        </div>
 
-        <Button type="submit" variant="danger" disabled={submitting} className="w-full">
-          {submitting ? 'Processing...' : 'Confirm Stock Out & Generate Invoice'}
-        </Button>
+          <div className="border-t border-border pt-4 text-sm text-muted">
+            <div className="flex justify-between">
+              <span>Items</span>
+              <span className="text-foreground">{cart.length}</span>
+            </div>
+            <div className="mt-1 flex justify-between font-medium">
+              <span>Grand Total</span>
+              <span className="text-foreground">{formatCurrency(grandTotal)}</span>
+            </div>
+          </div>
+
+          <Button type="submit" variant="danger" disabled={submitting} className="w-full">
+            {submitting ? 'Processing...' : 'Confirm Stock Out & Generate Invoice'}
+          </Button>
+        </div>
       </form>
     </div>
   );

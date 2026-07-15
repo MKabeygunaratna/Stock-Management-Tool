@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
+const withRetry = require('../utils/withRetry');
 
 const stockIn = async (req, res, next) => {
   try {
@@ -10,7 +11,7 @@ const stockIn = async (req, res, next) => {
       throw new AppError(400, 'productId and a positive quantity are required');
     }
 
-    const movement = await prisma.$transaction(async (tx) => {
+    const movement = await withRetry(() => prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({ where: { id: Number(productId) } });
       if (!product || !product.isActive) throw new AppError(404, 'Product not found');
 
@@ -26,13 +27,14 @@ const stockIn = async (req, res, next) => {
           type: 'IN',
           quantity: qty,
           unitPrice: product.costPrice,
+          costPrice: product.costPrice,
           reason: reason || null,
           reference: reference || null,
           stockAfter: updated.currentStock,
         },
         include: { product: true },
       });
-    });
+    }, { timeout: 15000 }));
 
     res.status(201).json(movement);
   } catch (err) {
@@ -62,7 +64,7 @@ const stockOut = async (req, res, next) => {
       }
     }
 
-    const invoice = await prisma.$transaction(async (tx) => {
+    const invoice = await withRetry(() => prisma.$transaction(async (tx) => {
       // Validate every line before mutating anything (all-or-nothing)
       const products = new Map();
       for (const item of normalizedItems) {
@@ -104,6 +106,7 @@ const stockOut = async (req, res, next) => {
             type: 'OUT',
             quantity: item.quantity,
             unitPrice: product.sellingPrice,
+            costPrice: product.costPrice,
             reason: notes || null,
             reference: reference || null,
             stockAfter: updated.currentStock,
@@ -123,7 +126,7 @@ const stockOut = async (req, res, next) => {
           user: { select: { id: true, username: true, fullName: true } },
         },
       });
-    });
+    }, { timeout: 20000, maxWait: 10000 }));
 
     res.status(201).json(invoice);
   } catch (err) {

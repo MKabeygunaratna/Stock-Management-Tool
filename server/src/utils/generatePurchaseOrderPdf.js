@@ -4,10 +4,12 @@ const company = require('../config/company');
 const formatMoney = (value) =>
   `Rs. ${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const streamInvoicePdf = (invoice, res) => {
+const conditionLabel = (condition) => (condition === 'RECONDITION' ? 'Recondition' : 'Brand New');
+
+const streamPurchaseOrderPdf = (order, res) => {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${invoice.invoiceNumber}.pdf"`);
+  res.setHeader('Content-Disposition', `attachment; filename="${order.orderNumber}.pdf"`);
   doc.pipe(res);
 
   const left = doc.page.margins.left;
@@ -21,44 +23,48 @@ const streamInvoicePdf = (invoice, res) => {
   doc.text(`E-MAIL-${company.email}`, { width: 250, align: 'right' });
 
   doc.moveDown(1.5);
-  doc.fontSize(16).font('Helvetica-Bold').text('INVOICE', { align: 'right' });
+  doc.fontSize(16).font('Helvetica-Bold').text('PURCHASE ORDER', { align: 'right' });
   doc.fontSize(10).font('Helvetica');
-  doc.text(`Invoice #: ${invoice.invoiceNumber}`, { align: 'right' });
-  doc.text(`Date: ${new Date(invoice.createdAt).toLocaleString()}`, { align: 'right' });
-  doc.text(`Served by: ${invoice.user.fullName}`, { align: 'right' });
+  doc.text(`Order #: ${order.orderNumber}`, { align: 'right' });
+  doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, { align: 'right' });
+  doc.text(`Requested by: ${order.user.fullName}`, { align: 'right' });
 
-  // Order details box: buyer name, company, reference and notes each get a proper label
-  const firstMovement = invoice.movements[0];
-  const detailLines = [{ label: 'Buyer Name', value: invoice.buyerName }];
-  if (invoice.buyerCompany) detailLines.push({ label: 'Company Name', value: invoice.buyerCompany });
-  if (firstMovement?.reference) detailLines.push({ label: 'Reference', value: firstMovement.reference });
-  if (firstMovement?.reason) detailLines.push({ label: 'Notes', value: firstMovement.reason });
+  // Order details box: supplier and notes each get a proper label
+  const detailLines = [];
+  if (order.supplierName) detailLines.push({ label: 'Supplier Name', value: order.supplierName });
+  if (order.notes) detailLines.push({ label: 'Notes', value: order.notes });
 
   const boxWidth = 260;
   const boxPadding = 8;
   const detailLineHeight = 14;
-  const boxHeight = detailLines.length * detailLineHeight + boxPadding * 2;
+  const boxHeight = Math.max(detailLines.length, 1) * detailLineHeight + boxPadding * 2;
   const boxY = doc.y + 20;
 
   doc.rect(left, boxY, boxWidth, boxHeight).strokeColor('#d4d4d8').lineWidth(1).stroke();
 
   doc.fontSize(9);
-  detailLines.forEach(({ label, value }, i) => {
-    const lineY = boxY + boxPadding + i * detailLineHeight;
-    doc.font('Helvetica-Bold').fillColor('black').text(`${label}:`, left + boxPadding, lineY, { continued: true });
-    doc.font('Helvetica').text(` ${value}`, { width: boxWidth - boxPadding * 2 - 10 });
-  });
+  if (detailLines.length === 0) {
+    doc.font('Helvetica').fillColor('#71717a').text('No supplier or notes provided', left + boxPadding, boxY + boxPadding);
+  } else {
+    detailLines.forEach(({ label, value }, i) => {
+      const lineY = boxY + boxPadding + i * detailLineHeight;
+      doc.font('Helvetica-Bold').fillColor('black').text(`${label}:`, left + boxPadding, lineY, { continued: true });
+      doc.font('Helvetica').text(` ${value}`, { width: boxWidth - boxPadding * 2 - 10 });
+    });
+  }
 
   doc.x = left;
   doc.y = boxY + boxHeight + 20;
 
   const columns = [
-    { key: 'partNumber', label: 'Part #', width: 80 },
-    { key: 'name', label: 'Name', width: 150 },
-    { key: 'brand', label: 'Brand', width: 80 },
-    { key: 'qty', label: 'Qty', width: 45 },
-    { key: 'unitPrice', label: 'Unit Price', width: 70 },
-    { key: 'lineTotal', label: 'Line Total', width: 80 },
+    { key: 'partNumber', label: 'Part #', width: 68 },
+    { key: 'name', label: 'Name', width: 105 },
+    { key: 'brand', label: 'Brand', width: 37 },
+    { key: 'status', label: 'In System', width: 45 },
+    { key: 'condition', label: 'Condition', width: 55 },
+    { key: 'qty', label: 'Qty', width: 30 },
+    { key: 'unitCost', label: 'Est. Unit Cost', width: 60 },
+    { key: 'lineTotal', label: 'Est. Line Total', width: 70 },
   ];
   const tableWidth = columns.reduce((s, c) => s + c.width, 0);
 
@@ -69,7 +75,7 @@ const streamInvoicePdf = (invoice, res) => {
     let x = tableLeft;
     doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica').fontSize(9);
     columns.forEach((col, i) => {
-      doc.text(values[i], x, y, { width: col.width, align: i >= 3 ? 'right' : 'left' });
+      doc.text(values[i], x, y, { width: col.width, align: i >= 5 ? 'right' : 'left' });
       x += col.width;
     });
     y += 18;
@@ -79,14 +85,16 @@ const streamInvoicePdf = (invoice, res) => {
   doc.moveTo(tableLeft, y).lineTo(tableLeft + tableWidth, y).stroke();
   y += 4;
 
-  invoice.movements.forEach((m) => {
+  order.items.forEach((item) => {
     drawRow([
-      m.product.partNumber,
-      m.product.name,
-      m.product.brand.name,
-      String(m.quantity),
-      formatMoney(m.unitPrice),
-      formatMoney(Number(m.unitPrice) * m.quantity),
+      item.partNumber || '-',
+      item.name,
+      item.brandName || '-',
+      item.isNew ? 'New Item' : 'Existing',
+      conditionLabel(item.condition),
+      String(item.quantity),
+      formatMoney(item.estimatedCost),
+      formatMoney(Number(item.estimatedCost) * item.quantity),
     ], false);
   });
 
@@ -94,7 +102,7 @@ const streamInvoicePdf = (invoice, res) => {
   doc.moveTo(tableLeft, y).lineTo(tableLeft + tableWidth, y).stroke();
   y += 10;
 
-  doc.font('Helvetica-Bold').fontSize(11).text(`Total: ${formatMoney(invoice.totalAmount)}`, tableLeft, y, {
+  doc.font('Helvetica-Bold').fontSize(11).text(`Estimated Total: ${formatMoney(order.totalEstimatedCost)}`, tableLeft, y, {
     width: tableWidth,
     align: 'right',
   });
@@ -114,11 +122,11 @@ const streamInvoicePdf = (invoice, res) => {
 
   doc.fontSize(10).font('Helvetica');
   doc.text('....................................', tableLeft, sigLineY);
-  doc.text('Customer Signature', tableLeft, sigLabelY);
+  doc.text('Prepared By', tableLeft, sigLabelY);
   doc.text('....................................', 350, sigLineY);
-  doc.text('Authorized Signature', 350, sigLabelY);
+  doc.text('Approved By', 350, sigLabelY);
 
   doc.end();
 };
 
-module.exports = { streamInvoicePdf };
+module.exports = { streamPurchaseOrderPdf };

@@ -14,6 +14,8 @@ const stockRoutes = require("./routes/stock.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const userRoutes = require("./routes/user.routes");
 const invoiceRoutes = require("./routes/invoice.routes");
+const accountRoutes = require("./routes/account.routes");
+const purchaseRoutes = require("./routes/purchase.routes");
 
 const app = express();
 
@@ -54,6 +56,8 @@ app.use("/api/stock", auth, stockRoutes);
 app.use("/api/dashboard", auth, dashboardRoutes);
 app.use("/api/users", auth, userRoutes);
 app.use("/api/invoices", auth, invoiceRoutes);
+app.use("/api/accounts", auth, accountRoutes);
+app.use("/api/purchases", auth, purchaseRoutes);
 
 // Serve index.html for all non-API routes (SPA fallback)
 app.get("*", (req, res) => {

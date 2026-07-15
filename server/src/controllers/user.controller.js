@@ -59,17 +59,44 @@ const update = async (req, res, next) => {
   }
 };
 
-const remove = async (req, res, next) => {
+const setStatus = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    if (id === req.user.id) {
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') {
+      throw new AppError(400, 'isActive must be true or false');
+    }
+    if (id === req.user.id && !isActive) {
       throw new AppError(400, 'You cannot disable your own account');
     }
-    await prisma.user.update({ where: { id }, data: { isActive: false } });
-    res.json({ message: 'User disabled' });
+
+    const user = await prisma.user.update({ where: { id }, data: { isActive } });
+    res.json(toPublicUser(user));
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { list, create, update, remove };
+const remove = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (id === req.user.id) {
+      throw new AppError(400, 'You cannot delete your own account');
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.refreshToken.deleteMany({ where: { userId: id } });
+      await tx.user.delete({ where: { id } });
+    });
+
+    res.json({ message: 'User deleted' });
+  } catch (err) {
+    const isFkViolation = err.code === 'P2003' || /foreign key constraint/i.test(err.message || '');
+    if (isFkViolation) {
+      return next(new AppError(409, 'Cannot delete this user because they have stock movements or invoices on record. Disable the account instead.'));
+    }
+    next(err);
+  }
+};
+
+module.exports = { list, create, update, setStatus, remove };

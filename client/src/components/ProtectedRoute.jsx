@@ -7,7 +7,7 @@ export default function ProtectedRoute({ allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-background">
         <Spinner label="Checking session..." />
       </div>
     );

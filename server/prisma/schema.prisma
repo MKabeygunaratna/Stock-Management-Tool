@@ -18,6 +18,11 @@ enum MovementType {
   OUT
 }
 
+enum PartCondition {
+  NEW
+  RECONDITION
+}
+
 model User {
   id           Int             @id @default(autoincrement())
   username     String          @unique
@@ -30,6 +35,7 @@ model User {
   movements    StockMovement[]
   invoices     Invoice[]
   refreshTokens RefreshToken[]
+  purchaseOrders PurchaseOrder[]
 
   @@map("users")
 }
@@ -86,10 +92,12 @@ model Product {
   sellingPrice Decimal         @default(0) @db.Decimal(12, 2)
   currentStock Int             @default(0)
   reorderLevel Int             @default(5)
+  condition    PartCondition   @default(NEW)
   isActive     Boolean         @default(true)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   movements    StockMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
 
   @@index([brandId])
   @@index([categoryId])
@@ -105,6 +113,7 @@ model StockMovement {
   type       MovementType
   quantity   Int
   unitPrice  Decimal      @default(0) @db.Decimal(12, 2)
+  costPrice  Decimal      @default(0) @db.Decimal(12, 2)
   reason     String?
   reference  String?
   stockAfter Int
@@ -132,4 +141,36 @@ model Invoice {
   movements     StockMovement[]
 
   @@map("invoices")
+}
+
+model PurchaseOrder {
+  id                 Int                 @id @default(autoincrement())
+  orderNumber        String              @unique
+  supplierName       String?
+  notes              String?
+  userId             Int
+  user               User                @relation(fields: [userId], references: [id])
+  totalEstimatedCost Decimal             @default(0) @db.Decimal(12, 2)
+  createdAt          DateTime            @default(now())
+  items              PurchaseOrderItem[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  productId       Int?
+  product         Product?      @relation(fields: [productId], references: [id])
+  partNumber      String?
+  name            String
+  brandName       String?
+  condition       PartCondition @default(NEW)
+  quantity        Int
+  estimatedCost   Decimal       @default(0) @db.Decimal(12, 2)
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_items")
 }

@@ -4,8 +4,8 @@ import { useToast } from '../../context/ToastContext';
 import Button from '../common/Button';
 
 const inputClass =
-  'w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
-const labelClass = 'mb-1 block text-sm font-medium text-zinc-300';
+  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
+const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 export default function StockMovementForm({ onSubmit }) {
   const { showToast } = useToast();
@@ -59,9 +59,9 @@ export default function StockMovementForm({ onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg space-y-4 rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="max-w-lg space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
       {error && (
-        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>
+        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
       )}
 
       <div>
@@ -73,22 +73,22 @@ export default function StockMovementForm({ onSubmit }) {
           className={inputClass}
         />
         {!selected && search && options.length > 0 && (
-          <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-zinc-700 bg-zinc-900 shadow-lg">
+          <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
             {options.map((p) => (
               <button
                 type="button"
                 key={p.id}
                 onClick={() => { setSelected(p); setSearch(''); }}
-                className="block w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-muted"
               >
                 <span className="font-medium">{p.partNumber}</span> - {p.name}
-                <span className="ml-2 text-xs text-zinc-500">({p.brand.name}, stock: {p.currentStock})</span>
+                <span className="ml-2 text-xs text-muted">({p.brand.name}, stock: {p.currentStock})</span>
               </button>
             ))}
           </div>
         )}
         {selected && (
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted">
             Current stock: {selected.currentStock} {selected.unit} — Brand: {selected.brand.name}
           </p>
         )}

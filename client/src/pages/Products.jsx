@@ -117,18 +117,18 @@ export default function Products() {
 
       <div className="flex flex-wrap gap-3">
         <div className="relative">
-          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             placeholder="Search by name or part number"
             value={search}
             onChange={(e) => { setPage(1); setSearch(e.target.value); }}
-            className="rounded-md border border-zinc-700 bg-zinc-900 py-2 pl-8 pr-3 text-sm text-zinc-100 placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+            className="rounded-md border border-input bg-card py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
           />
         </div>
         <select
           value={brandId}
           onChange={(e) => { setPage(1); setBrandId(e.target.value); }}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+          className="rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none"
         >
           <option value="">All Brands</option>
           {brands.map((b) => (
@@ -138,14 +138,14 @@ export default function Products() {
         <select
           value={categoryId}
           onChange={(e) => { setPage(1); setCategoryId(e.target.value); }}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none"
+          className="rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm text-zinc-400">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input
             type="checkbox"
             checked={lowStock}
@@ -156,19 +156,20 @@ export default function Products() {
         </label>
       </div>
 
-      {error && <p className="text-red-400">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 shadow-sm">
+      <div className="rounded-lg border border-border bg-card shadow-sm">
         {loading ? (
           <Spinner label="Loading parts..." />
         ) : (
           <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800 text-left text-zinc-500">
+              <tr className="border-b border-border text-left text-muted">
                 <th className="px-4 py-2 font-medium">Part #</th>
                 <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Brand</th>
                 <th className="px-4 py-2 font-medium">Category</th>
+                <th className="px-4 py-2 font-medium">Condition</th>
                 <th className="px-4 py-2 font-medium">Stock</th>
                 <th className="px-4 py-2 font-medium">Selling Price</th>
                 {isAdmin && <th className="px-4 py-2 font-medium">Actions</th>}
@@ -176,27 +177,32 @@ export default function Products() {
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-800/40">
-                  <td className="px-4 py-2 text-zinc-500">{p.partNumber}</td>
-                  <td className="px-4 py-2 text-zinc-100">{p.name}</td>
-                  <td className="px-4 py-2 text-zinc-300">{p.brand.name}</td>
-                  <td className="px-4 py-2 text-zinc-500">{p.category?.name || '-'}</td>
-                  <td className="px-4 py-2 text-zinc-300">
+                <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+                  <td className="px-4 py-2 text-muted">{p.partNumber}</td>
+                  <td className="px-4 py-2 text-foreground">{p.name}</td>
+                  <td className="px-4 py-2 text-muted">{p.brand.name}</td>
+                  <td className="px-4 py-2 text-muted">{p.category?.name || '-'}</td>
+                  <td className="px-4 py-2">
+                    <span className={p.condition === 'RECONDITION' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}>
+                      {p.condition === 'RECONDITION' ? 'Recondition' : 'Brand New'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-muted">
                     {p.currentStock} {p.unit}
                     <LowStockBadge currentStock={p.currentStock} reorderLevel={p.reorderLevel} />
                   </td>
-                  <td className="px-4 py-2 text-zinc-300">{formatCurrency(p.sellingPrice)}</td>
+                  <td className="px-4 py-2 text-muted">{formatCurrency(p.sellingPrice)}</td>
                   {isAdmin && (
                     <td className="px-4 py-2">
                       <button onClick={() => openEdit(p)} className="mr-3 text-amber-500 hover:underline">Edit</button>
-                      <button onClick={() => setDeleteTarget(p)} className="text-red-400 hover:underline">Delete</button>
+                      <button onClick={() => setDeleteTarget(p)} className="text-red-600 dark:text-red-400 hover:underline">Delete</button>
                     </td>
                   )}
                 </tr>
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6}>
+                  <td colSpan={isAdmin ? 8 : 7}>
                     <EmptyState icon={Package} message="No parts found" />
                   </td>
                 </tr>

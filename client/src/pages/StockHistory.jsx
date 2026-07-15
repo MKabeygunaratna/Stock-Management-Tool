@@ -6,7 +6,7 @@ import Pagination from '../components/common/Pagination';
 import PageHeader from '../components/common/PageHeader';
 import EmptyState from '../components/common/EmptyState';
 
-const selectClass = 'rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-amber-500 focus:outline-none';
+const selectClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none';
 
 export default function StockHistory() {
   const [items, setItems] = useState([]);
@@ -60,12 +60,12 @@ export default function StockHistory() {
         <input type="date" value={to} onChange={(e) => { setPage(1); setTo(e.target.value); }} className={selectClass} />
       </div>
 
-      {error && <p className="text-red-400">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 shadow-sm">
+      <div className="rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 text-left text-zinc-500">
+            <tr className="border-b border-border text-left text-muted">
               <th className="px-4 py-2 font-medium">Date</th>
               <th className="px-4 py-2 font-medium">Part</th>
               <th className="px-4 py-2 font-medium">Brand</th>
@@ -78,17 +78,17 @@ export default function StockHistory() {
           </thead>
           <tbody>
             {items.map((m) => (
-              <tr key={m.id} className="border-b border-zinc-800/60 last:border-0 hover:bg-zinc-800/40">
-                <td className="px-4 py-2 text-zinc-500">{new Date(m.createdAt).toLocaleString()}</td>
-                <td className="px-4 py-2 text-zinc-100">{m.product.name}</td>
-                <td className="px-4 py-2 text-zinc-300">{m.product.brand.name}</td>
+              <tr key={m.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+                <td className="px-4 py-2 text-muted">{new Date(m.createdAt).toLocaleString()}</td>
+                <td className="px-4 py-2 text-foreground">{m.product.name}</td>
+                <td className="px-4 py-2 text-muted">{m.product.brand.name}</td>
                 <td className="px-4 py-2">
-                  <span className={m.type === 'IN' ? 'text-emerald-400' : 'text-red-400'}>{m.type}</span>
+                  <span className={m.type === 'IN' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>{m.type}</span>
                 </td>
-                <td className="px-4 py-2 text-zinc-300">{m.quantity}</td>
-                <td className="px-4 py-2 text-zinc-300">{m.stockAfter}</td>
-                <td className="px-4 py-2 text-zinc-500">{m.reason || '-'}</td>
-                <td className="px-4 py-2 text-zinc-500">{m.user.fullName}</td>
+                <td className="px-4 py-2 text-muted">{m.quantity}</td>
+                <td className="px-4 py-2 text-muted">{m.stockAfter}</td>
+                <td className="px-4 py-2 text-muted">{m.reason || '-'}</td>
+                <td className="px-4 py-2 text-muted">{m.user.fullName}</td>
               </tr>
             ))}
             {items.length === 0 && (

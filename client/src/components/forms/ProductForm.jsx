@@ -2,8 +2,8 @@ import { useState } from 'react';
 import Button from '../common/Button';
 
 const inputClass =
-  'w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50';
-const labelClass = 'mb-1 block text-sm font-medium text-zinc-300';
+  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50';
+const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 const emptyForm = {
   partNumber: '',
@@ -16,6 +16,7 @@ const emptyForm = {
   sellingPrice: '',
   currentStock: '',
   reorderLevel: '',
+  condition: 'NEW',
 };
 
 export default function ProductForm({ brands, categories, initial, onSubmit, onCancel }) {
@@ -32,6 +33,7 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
           sellingPrice: initial.sellingPrice,
           currentStock: initial.currentStock,
           reorderLevel: initial.reorderLevel,
+          condition: initial.condition || 'NEW',
         }
       : emptyForm
   );
@@ -56,7 +58,7 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>
+        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
       )}
 
       <div>
@@ -75,7 +77,7 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
         <input value={form.name} onChange={handleChange('name')} className={inputClass} required />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <label className={labelClass}>Brand</label>
           <select value={form.brandId} onChange={handleChange('brandId')} className={inputClass} required>
@@ -92,6 +94,13 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
+          </select>
+        </div>
+        <div>
+          <label className={labelClass}>Condition</label>
+          <select value={form.condition} onChange={handleChange('condition')} className={inputClass}>
+            <option value="NEW">Brand New</option>
+            <option value="RECONDITION">Recondition</option>
           </select>
         </div>
       </div>

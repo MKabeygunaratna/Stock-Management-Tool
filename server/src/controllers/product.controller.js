@@ -63,11 +63,14 @@ const create = async (req, res, next) => {
   try {
     const {
       partNumber, name, description, unit, brandId, categoryId,
-      costPrice, sellingPrice, currentStock, reorderLevel,
+      costPrice, sellingPrice, currentStock, reorderLevel, condition,
     } = req.body;
 
     if (!partNumber || !name || !brandId) {
       throw new AppError(400, 'partNumber, name and brandId are required');
+    }
+    if (condition && !['NEW', 'RECONDITION'].includes(condition)) {
+      throw new AppError(400, 'condition must be NEW or RECONDITION');
     }
 
     const product = await prisma.product.create({
@@ -82,6 +85,7 @@ const create = async (req, res, next) => {
         sellingPrice: sellingPrice ?? 0,
         currentStock: currentStock ?? 0,
         reorderLevel: reorderLevel ?? 5,
+        condition: condition || 'NEW',
       },
     });
     res.status(201).json(product);
@@ -94,8 +98,12 @@ const update = async (req, res, next) => {
   try {
     const {
       partNumber, name, description, unit, brandId, categoryId,
-      costPrice, sellingPrice, reorderLevel,
+      costPrice, sellingPrice, reorderLevel, condition,
     } = req.body;
+
+    if (condition && !['NEW', 'RECONDITION'].includes(condition)) {
+      throw new AppError(400, 'condition must be NEW or RECONDITION');
+    }
 
     const product = await prisma.product.update({
       where: { id: Number(req.params.id) },
@@ -109,6 +117,7 @@ const update = async (req, res, next) => {
         costPrice,
         sellingPrice,
         reorderLevel,
+        condition,
       },
     });
     res.json(product);

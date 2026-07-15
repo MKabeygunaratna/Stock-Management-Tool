@@ -8,8 +8,14 @@ export default function PageHeader({ icon: Icon, title, subtitle, action }) {
           </span>
         )}
         <div>
-          <h1 className="text-lg font-semibold text-zinc-100">{title}</h1>
-          {subtitle && <p className="text-sm text-zinc-500">{subtitle}</p>}
+          <h1 className="text-lg font-semibold text-foreground">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-sm text-muted">
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
       {action}
