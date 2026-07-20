@@ -107,24 +107,16 @@ const streamPurchaseOrderPdf = (order, res) => {
     align: 'right',
   });
 
-  // Policies and signatures are anchored to the bottom of the page, not the flow of content above
+  // Policies are anchored to the bottom of the page, not the flow of content above
   const pageBottom = doc.page.height - doc.page.margins.bottom;
-  const sigLabelY = pageBottom - 12;
-  const sigLineY = sigLabelY - 15;
   const policyLineHeight = 11;
-  const policiesY = sigLineY - 15 - company.policies.length * policyLineHeight;
+  const policiesY = pageBottom - company.policies.length * policyLineHeight;
 
   doc.fillColor('#cc0000').fontSize(8).font('Helvetica');
   company.policies.forEach((p, i) => {
     doc.text(`• ${p}`, tableLeft, policiesY + i * policyLineHeight, { width: tableWidth });
   });
   doc.fillColor('black');
-
-  doc.fontSize(10).font('Helvetica');
-  doc.text('....................................', tableLeft, sigLineY);
-  doc.text('Prepared By', tableLeft, sigLabelY);
-  doc.text('....................................', 350, sigLineY);
-  doc.text('Approved By', 350, sigLabelY);
 
   doc.end();
 };

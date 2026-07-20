@@ -20,6 +20,7 @@ const customerRoutes = require("./routes/customer.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const supplierRoutes = require("./routes/supplier.routes");
 const supplierPaymentRoutes = require("./routes/supplierPayment.routes");
+const loginLogRoutes = require("./routes/loginLog.routes");
 
 const app = express();
 
@@ -70,6 +71,7 @@ app.use("/api/customers", auth, customerRoutes);
 app.use("/api/payments", auth, paymentRoutes);
 app.use("/api/suppliers", auth, supplierRoutes);
 app.use("/api/supplier-payments", auth, supplierPaymentRoutes);
+app.use("/api/login-logs", auth, loginLogRoutes);
 
 // Serve index.html for all non-API routes (SPA fallback)
 app.get("*", (req, res) => {

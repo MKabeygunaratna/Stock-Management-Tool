@@ -19,6 +19,7 @@ import {
   TrendingUp,
   ChevronDown,
   ShieldCheck,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -45,6 +46,7 @@ const adminItems = [
   { to: "/brands", label: "Brands", icon: Tag },
   { to: "/categories", label: "Categories", icon: Layers },
   { to: "/users", label: "Users", icon: UsersIcon },
+  { to: "/login-history", label: "Login History", icon: KeyRound },
 ];
 
 function isItemActive(pathname, item) {

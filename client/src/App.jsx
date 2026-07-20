@@ -18,6 +18,7 @@ import Suppliers from './pages/Suppliers';
 import Brands from './pages/Brands';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
+import LoginHistory from './pages/LoginHistory';
 import AccountsOverview from './pages/accounts/AccountsOverview';
 import OverduePayments from './pages/accounts/OverduePayments';
 import ReceivablesPayables from './pages/accounts/ReceivablesPayables';
@@ -48,6 +49,7 @@ export default function App() {
                     <Route path="/brands" element={<Brands />} />
                     <Route path="/categories" element={<Categories />} />
                     <Route path="/users" element={<Users />} />
+                    <Route path="/login-history" element={<LoginHistory />} />
                     <Route path="/accounts" element={<AccountsOverview />} />
                     <Route path="/accounts/overdue" element={<OverduePayments />} />
                     <Route path="/accounts/outstanding" element={<ReceivablesPayables />} />

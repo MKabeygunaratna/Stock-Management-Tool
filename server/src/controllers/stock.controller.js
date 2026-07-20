@@ -1,6 +1,7 @@
 const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const withRetry = require('../utils/withRetry');
+const { getClientIp, getClientMac } = require('../utils/network');
 
 const stockIn = async (req, res, next) => {
   try {
@@ -10,6 +11,9 @@ const stockIn = async (req, res, next) => {
     if (!productId || !qty || qty <= 0) {
       throw new AppError(400, 'productId and a positive quantity are required');
     }
+
+    const ipAddress = getClientIp(req);
+    const macAddress = await getClientMac(ipAddress);
 
     let paid;
     if (paidAmount !== undefined && paidAmount !== null && paidAmount !== '') {
@@ -57,6 +61,8 @@ const stockIn = async (req, res, next) => {
           stockAfter: updated.currentStock,
           supplierId: supplier?.id || null,
           paymentType,
+          ipAddress,
+          macAddress,
         },
         include: { product: true, supplier: true },
       });
@@ -95,6 +101,9 @@ const stockOut = async (req, res, next) => {
     if (!Array.isArray(items) || items.length === 0) {
       throw new AppError(400, 'At least one item is required');
     }
+
+    const ipAddress = getClientIp(req);
+    const macAddress = await getClientMac(ipAddress);
 
     const normalizedItems = items.map((item) => ({
       productId: Number(item.productId),
@@ -163,6 +172,8 @@ const stockOut = async (req, res, next) => {
             reference: reference || null,
             stockAfter: updated.currentStock,
             invoiceId: draftInvoice.id,
+            ipAddress,
+            macAddress,
           },
         });
       }

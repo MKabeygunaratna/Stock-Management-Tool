@@ -88,7 +88,14 @@ export default function StockHistory() {
                 <td className="px-4 py-2 text-muted">{m.quantity}</td>
                 <td className="px-4 py-2 text-muted">{m.stockAfter}</td>
                 <td className="px-4 py-2 text-muted">{m.reason || '-'}</td>
-                <td className="px-4 py-2 text-muted">{m.user.fullName}</td>
+                <td className="px-4 py-2 text-muted">
+                  {m.user.fullName}
+                  {(m.ipAddress || m.macAddress) && (
+                    <div className="text-xs text-muted opacity-70">
+                      {m.ipAddress || '—'}{m.macAddress ? ` · ${m.macAddress}` : ''}
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
             {items.length === 0 && (

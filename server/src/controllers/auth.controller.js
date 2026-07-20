@@ -1,6 +1,7 @@
 const prisma = require('../config/prisma');
 const AppError = require('../utils/AppError');
 const { comparePassword } = require('../utils/password');
+const { getClientIp, getClientMac } = require('../utils/network');
 const {
   REFRESH_TOKEN_TTL_MS,
   generateAccessToken,
@@ -57,23 +58,36 @@ const rotateToken = async (res, user, oldRowId) => {
 };
 
 const login = async (req, res, next) => {
+  const { username, password } = req.body;
+
   try {
-    const { username, password } = req.body;
     if (!username || !password) {
       throw new AppError(400, 'Username and password are required');
     }
 
+    const ipAddress = getClientIp(req);
+    const macAddress = await getClientMac(ipAddress);
+    const userAgent = req.headers['user-agent'] || null;
+    const logAttempt = (success, userId) =>
+      prisma.loginLog.create({
+        data: { userId: userId || null, username, success, ipAddress, macAddress, userAgent },
+      }).catch(() => {});
+      // Best-effort: a logging failure should never block a login.
+
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user || !user.isActive) {
+      await logAttempt(false, null);
       throw new AppError(401, 'Invalid username or password');
     }
 
     const valid = await comparePassword(password, user.passwordHash);
     if (!valid) {
+      await logAttempt(false, user.id);
       throw new AppError(401, 'Invalid username or password');
     }
 
     await issueSession(res, user);
+    await logAttempt(true, user.id);
     res.json({ user: toPublicUser(user) });
   } catch (err) {
     next(err);

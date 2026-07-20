@@ -43,8 +43,25 @@ model User {
   purchaseOrders PurchaseOrder[]
   payments      Payment[]
   supplierPayments SupplierPayment[]
+  loginLogs     LoginLog[]
 
   @@map("users")
+}
+
+model LoginLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int?
+  user       User?    @relation(fields: [userId], references: [id])
+  username   String
+  success    Boolean
+  ipAddress  String?
+  macAddress String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("login_logs")
 }
 
 model RefreshToken {
@@ -132,6 +149,8 @@ model StockMovement {
   supplierId Int?
   supplier   Supplier?    @relation(fields: [supplierId], references: [id])
   paymentType PaymentType?
+  ipAddress  String?
+  macAddress String?
   createdAt  DateTime     @default(now())
 
   @@index([productId])
