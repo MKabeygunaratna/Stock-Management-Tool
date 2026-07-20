@@ -41,7 +41,7 @@ export default function StockHistory() {
   useEffect(load, [load]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <PageHeader icon={History} title="Stock History" subtitle="Full audit trail of every stock movement" />
 
       <div className="flex flex-wrap gap-3">
@@ -78,7 +78,7 @@ export default function StockHistory() {
           </thead>
           <tbody>
             {items.map((m) => (
-              <tr key={m.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+              <tr key={m.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
                 <td className="px-4 py-2 text-muted">{new Date(m.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-2 text-foreground">{m.product.name}</td>
                 <td className="px-4 py-2 text-muted">{m.product.brand.name}</td>

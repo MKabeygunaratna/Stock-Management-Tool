@@ -3,6 +3,7 @@ import { Wrench, LogOut, Menu } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../common/Button";
 import ThemeToggle from "../ThemeToggle";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
@@ -46,6 +47,7 @@ export default function Navbar({ onMenuClick }) {
             <span className="text-muted opacity-70">({user?.role})</span>
           </span>
         </div>
+        <NotificationBell />
         <ThemeToggle />
         <Button
           variant="secondary"

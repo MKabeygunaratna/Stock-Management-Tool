@@ -19,10 +19,30 @@ const list = async (req, res, next) => {
     const take = Math.min(100, Math.max(1, Number(limit)));
     const skip = (pageNum - 1) * take;
 
+    if (lowStock === 'true') {
+      // currentStock <= reorderLevel compares two columns, which Prisma's
+      // query builder can't express — filter/paginate the low-stock subset in JS.
+      const all = await prisma.product.findMany({
+        where,
+        include: { brand: true, category: true, supplier: true },
+        orderBy: { name: 'asc' },
+      });
+      const filtered = all.filter((p) => p.currentStock <= p.reorderLevel);
+      const total = filtered.length;
+
+      return res.json({
+        items: filtered.slice(skip, skip + take),
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      });
+    }
+
     const [items, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: { brand: true, category: true },
+        include: { brand: true, category: true, supplier: true },
         orderBy: { name: 'asc' },
         skip,
         take,
@@ -30,17 +50,29 @@ const list = async (req, res, next) => {
       prisma.product.count({ where }),
     ]);
 
-    const filtered = lowStock === 'true'
-      ? items.filter((p) => p.currentStock <= p.reorderLevel)
-      : items;
-
     res.json({
-      items: filtered,
+      items,
       total,
       page: pageNum,
       limit: take,
       totalPages: Math.ceil(total / take),
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const lowStock = async (req, res, next) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      include: { brand: true, category: true },
+      orderBy: { name: 'asc' },
+    });
+    const items = products
+      .filter((p) => p.currentStock <= p.reorderLevel)
+      .sort((a, b) => (a.currentStock - a.reorderLevel) - (b.currentStock - b.reorderLevel));
+    res.json({ items, total: items.length });
   } catch (err) {
     next(err);
   }
@@ -62,7 +94,7 @@ const getOne = async (req, res, next) => {
 const create = async (req, res, next) => {
   try {
     const {
-      partNumber, name, description, unit, brandId, categoryId,
+      partNumber, name, description, unit, brandId, categoryId, supplierId,
       costPrice, sellingPrice, currentStock, reorderLevel, condition,
     } = req.body;
 
@@ -81,6 +113,7 @@ const create = async (req, res, next) => {
         unit: unit || 'pcs',
         brandId: Number(brandId),
         categoryId: categoryId ? Number(categoryId) : null,
+        supplierId: supplierId ? Number(supplierId) : null,
         costPrice: costPrice ?? 0,
         sellingPrice: sellingPrice ?? 0,
         currentStock: currentStock ?? 0,
@@ -97,7 +130,7 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const {
-      partNumber, name, description, unit, brandId, categoryId,
+      partNumber, name, description, unit, brandId, categoryId, supplierId,
       costPrice, sellingPrice, reorderLevel, condition,
     } = req.body;
 
@@ -114,6 +147,7 @@ const update = async (req, res, next) => {
         unit,
         brandId: brandId !== undefined ? Number(brandId) : undefined,
         categoryId: categoryId !== undefined ? (categoryId ? Number(categoryId) : null) : undefined,
+        supplierId: supplierId !== undefined ? (supplierId ? Number(supplierId) : null) : undefined,
         costPrice,
         sellingPrice,
         reorderLevel,
@@ -141,4 +175,4 @@ const remove = async (req, res, next) => {
   }
 };
 
-module.exports = { list, getOne, create, update, remove };
+module.exports = { list, lowStock, getOne, create, update, remove };

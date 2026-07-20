@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ShoppingCart, Plus } from 'lucide-react';
+import { ShoppingCart, Plus, PackageSearch, Search, History, Calendar, User, FileText, Truck } from 'lucide-react';
 import { getProducts } from '../api/products.api';
+import { getAllSuppliers } from '../api/suppliers.api';
 import { getPurchaseOrders, getPurchaseOrder, createPurchaseOrder, downloadPurchaseOrderPdf } from '../api/purchases.api';
 import { formatCurrency } from '../utils/currency';
 import { useToast } from '../context/ToastContext';
@@ -27,14 +28,27 @@ export default function Purchases() {
   const [cart, setCart] = useState([]);
   const [itemModalOpen, setItemModalOpen] = useState(false);
 
+  const [stockModalOpen, setStockModalOpen] = useState(false);
+  const [stockItems, setStockItems] = useState([]);
+  const [stockPage, setStockPage] = useState(1);
+  const [stockTotalPages, setStockTotalPages] = useState(1);
+  const [stockSearch, setStockSearch] = useState('');
+  const [stockLowStockOnly, setStockLowStockOnly] = useState(false);
+  const [stockLoading, setStockLoading] = useState(false);
+
+  const [suppliers, setSuppliers] = useState([]);
+  const [supplierId, setSupplierId] = useState('');
   const [supplierName, setSupplierName] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const [activeTab, setActiveTab] = useState('new');
+
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [downloadingId, setDownloadingId] = useState(null);
 
   const [viewOrder, setViewOrder] = useState(null);
@@ -44,6 +58,7 @@ export default function Purchases() {
     getProducts({ lowStock: true, limit: 50 })
       .then((data) => setLowStockItems(data.items))
       .catch(() => {});
+    getAllSuppliers().then(setSuppliers).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -60,11 +75,39 @@ export default function Purchases() {
       .then((data) => {
         setOrders(data.items);
         setTotalPages(data.totalPages);
+        setTotalOrders(data.total);
       })
       .catch(() => {});
   }, [page]);
 
   useEffect(loadOrders, [loadOrders]);
+
+  useEffect(() => {
+    if (!stockModalOpen) return;
+    setStockLoading(true);
+    const timer = setTimeout(() => {
+      getProducts({
+        page: stockPage,
+        search: stockSearch || undefined,
+        lowStock: stockLowStockOnly || undefined,
+        limit: 10,
+      })
+        .then((data) => {
+          setStockItems(data.items);
+          setStockTotalPages(data.totalPages);
+        })
+        .catch(() => showToast('Failed to load stock', 'error'))
+        .finally(() => setStockLoading(false));
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [stockModalOpen, stockPage, stockSearch, stockLowStockOnly, showToast]);
+
+  const openStockModal = () => {
+    setStockSearch('');
+    setStockLowStockOnly(false);
+    setStockPage(1);
+    setStockModalOpen(true);
+  };
 
   const addExistingToCart = (product) => {
     setSearch('');
@@ -91,6 +134,11 @@ export default function Purchases() {
     });
   };
 
+  const addFromStockModal = (product) => {
+    addExistingToCart(product);
+    showToast(`Added ${product.name} to the purchase list`);
+  };
+
   const addNewItem = (item) => {
     setCart((prev) => [...prev, { key: `n-${Date.now()}`, productId: null, isNew: true, ...item }]);
     setItemModalOpen(false);
@@ -106,6 +154,7 @@ export default function Purchases() {
 
   const resetForm = () => {
     setCart([]);
+    setSupplierId('');
     setSupplierName('');
     setNotes('');
   };
@@ -128,7 +177,8 @@ export default function Purchases() {
     setSubmitting(true);
     try {
       const order = await createPurchaseOrder({
-        supplierName,
+        supplierId: supplierId || undefined,
+        supplierName: supplierId ? undefined : (supplierName || undefined),
         notes,
         items: cart.map((line) => ({
           productId: line.productId,
@@ -176,11 +226,42 @@ export default function Purchases() {
     }
   };
 
+  const tabs = [
+    { id: 'new', label: 'New Purchase Order', icon: Plus },
+    { id: 'history', label: 'Order History', icon: History, count: totalOrders },
+  ];
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <PageHeader icon={ShoppingCart} title="Purchases" subtitle="Build a purchase order for low-stock or new parts" />
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+      <div className="flex gap-1 border-b border-border">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                : 'border-transparent text-muted hover:text-foreground'
+            }`}
+          >
+            <tab.icon size={15} />
+            {tab.label}
+            {tab.count > 0 && (
+              <span className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+                activeTab === tab.id ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' : 'bg-surface-muted text-muted'
+              }`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'new' && (
+      <form onSubmit={handleSubmit} className="animate-fade-in space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
         {error && (
           <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
         )}
@@ -228,6 +309,9 @@ export default function Purchases() {
               </div>
             )}
           </div>
+          <Button type="button" variant="secondary" onClick={openStockModal}>
+            <PackageSearch size={16} /> Browse Stock
+          </Button>
           <Button type="button" variant="secondary" onClick={() => setItemModalOpen(true)}>
             <Plus size={16} /> New Item
           </Button>
@@ -297,8 +381,25 @@ export default function Purchases() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className={labelClass}>Supplier Name (optional)</label>
-            <input value={supplierName} onChange={(e) => setSupplierName(e.target.value)} className={inputClass} />
+            <label className={labelClass}>Supplier (optional)</label>
+            <select
+              value={supplierId}
+              onChange={(e) => { setSupplierId(e.target.value); if (e.target.value) setSupplierName(''); }}
+              className={inputClass}
+            >
+              <option value="">Other / one-off supplier</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
+              ))}
+            </select>
+            {!supplierId && (
+              <input
+                value={supplierName}
+                onChange={(e) => setSupplierName(e.target.value)}
+                placeholder="Supplier name (not in the list)"
+                className={`${inputClass} mt-2 animate-fade-in`}
+              />
+            )}
           </div>
           <div>
             <label className={labelClass}>Notes (optional)</label>
@@ -310,12 +411,94 @@ export default function Purchases() {
           {submitting ? 'Creating...' : 'Create Purchase Order'}
         </Button>
       </form>
+      )}
 
       <Modal open={itemModalOpen} title="Add New Item" onClose={() => setItemModalOpen(false)}>
         <NewPurchaseItemForm onSubmit={addNewItem} onCancel={() => setItemModalOpen(false)} />
       </Modal>
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <Modal open={stockModalOpen} title="Browse Stock" onClose={() => setStockModalOpen(false)} size="lg">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+              <input
+                placeholder="Search by name or part number"
+                value={stockSearch}
+                onChange={(e) => { setStockPage(1); setStockSearch(e.target.value); }}
+                className="w-full rounded-md border border-input bg-surface-muted py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={stockLowStockOnly}
+                onChange={(e) => { setStockPage(1); setStockLowStockOnly(e.target.checked); }}
+                className="accent-amber-500"
+              />
+              Low stock only
+            </label>
+          </div>
+
+          <div className="rounded-md border border-border">
+            {stockLoading ? (
+              <Spinner label="Loading stock..." />
+            ) : (
+              <div className="max-h-[26rem] overflow-auto"><table className="w-full text-sm">
+                <thead className="sticky top-0 bg-card">
+                  <tr className="border-b border-border text-left text-muted">
+                    <th className="px-3 py-2 font-medium">Part</th>
+                    <th className="px-3 py-2 font-medium">Brand</th>
+                    <th className="px-3 py-2 font-medium">Stock</th>
+                    <th className="px-3 py-2 font-medium">Cost</th>
+                    <th className="px-3 py-2 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stockItems.map((p) => {
+                    const low = p.currentStock <= p.reorderLevel;
+                    return (
+                      <tr key={p.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
+                        <td className="px-3 py-2 text-foreground">
+                          {p.name}
+                          <div className="text-xs text-muted">{p.partNumber}</div>
+                        </td>
+                        <td className="px-3 py-2 text-muted">{p.brand.name}</td>
+                        <td className="px-3 py-2">
+                          <span className={low ? 'font-medium text-red-600 dark:text-red-400' : 'text-muted'}>
+                            {p.currentStock}/{p.reorderLevel} {p.unit}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-muted">{formatCurrency(p.costPrice)}</td>
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            type="button"
+                            onClick={() => addFromStockModal(p)}
+                            className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+                          >
+                            + Add
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {stockItems.length === 0 && (
+                    <tr>
+                      <td colSpan={5}>
+                        <EmptyState icon={PackageSearch} message="No parts found" />
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table></div>
+            )}
+            <Pagination page={stockPage} totalPages={stockTotalPages} onChange={setStockPage} />
+          </div>
+        </div>
+      </Modal>
+
+      {activeTab === 'history' && (
+      <div className="animate-fade-in rounded-lg border border-border bg-card shadow-sm">
         <h2 className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">Purchase Order History</h2>
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
@@ -331,7 +514,7 @@ export default function Purchases() {
           </thead>
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+              <tr key={o.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
                 <td className="px-4 py-2 font-medium text-foreground">{o.orderNumber}</td>
                 <td className="px-4 py-2 text-muted">{new Date(o.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-2 text-muted">{o.supplierName || '-'}</td>
@@ -363,54 +546,80 @@ export default function Purchases() {
         </table></div>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
+      )}
 
-      <Modal open={!!viewOrder} title={viewOrder?.orderNumber || 'Purchase Order'} onClose={() => setViewOrder(null)}>
+      <Modal open={!!viewOrder} title={viewOrder?.orderNumber || 'Purchase Order'} onClose={() => setViewOrder(null)} size="xl">
         {viewLoading && <Spinner label="Loading order..." />}
         {!viewLoading && viewOrder?.items && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <p className="text-muted">Date</p>
-              <p className="text-foreground">{new Date(viewOrder.createdAt).toLocaleString()}</p>
-              <p className="text-muted">Supplier</p>
-              <p className="text-foreground">{viewOrder.supplierName || '-'}</p>
-              <p className="text-muted">Notes</p>
-              <p className="text-foreground">{viewOrder.notes || '-'}</p>
-              <p className="text-muted">Requested by</p>
-              <p className="text-foreground">{viewOrder.user.fullName}</p>
+          <div className="animate-fade-in space-y-5">
+            <div className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface-muted p-4 sm:grid-cols-4">
+              <div className="flex items-start gap-2.5">
+                <Calendar size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="text-xs text-muted">Date</p>
+                  <p className="text-sm font-medium text-foreground">{new Date(viewOrder.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <Truck size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="text-xs text-muted">Supplier</p>
+                  <p className="text-sm font-medium text-foreground">{viewOrder.supplierName || '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <User size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="text-xs text-muted">Requested by</p>
+                  <p className="text-sm font-medium text-foreground">{viewOrder.user.fullName}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <FileText size={16} className="mt-0.5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="text-xs text-muted">Notes</p>
+                  <p className="text-sm font-medium text-foreground">{viewOrder.notes || '—'}</p>
+                </div>
+              </div>
             </div>
 
-            <div className="max-h-64 overflow-y-auto rounded-md border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-muted">
-                    <th className="px-3 py-2 font-medium">Part</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Condition</th>
-                    <th className="px-3 py-2 font-medium">Qty</th>
-                    <th className="px-3 py-2 font-medium">Line Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {viewOrder.items.map((item) => (
-                    <tr key={item.id} className="border-b border-border/60 last:border-0">
-                      <td className="px-3 py-2 text-foreground">
-                        {item.name}
-                        <div className="text-xs text-muted">{item.partNumber || '-'} {item.brandName ? `· ${item.brandName}` : ''}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <span className={item.isNew ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}>{item.isNew ? 'New Item' : 'Existing'}</span>
-                      </td>
-                      <td className="px-3 py-2 text-muted">{conditionLabel(item.condition)}</td>
-                      <td className="px-3 py-2 text-muted">{item.quantity}</td>
-                      <td className="px-3 py-2 text-muted">{formatCurrency(Number(item.estimatedCost) * item.quantity)}</td>
+            <div>
+              <p className="mb-2 text-sm font-semibold text-foreground">Items ({viewOrder.items.length})</p>
+              <div className="max-h-[22rem] overflow-auto rounded-lg border border-border">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-card">
+                    <tr className="border-b border-border text-left text-muted">
+                      <th className="px-4 py-2.5 font-medium">Part</th>
+                      <th className="px-4 py-2.5 font-medium">Status</th>
+                      <th className="px-4 py-2.5 font-medium">Condition</th>
+                      <th className="px-4 py-2.5 font-medium">Qty</th>
+                      <th className="px-4 py-2.5 font-medium">Est. Unit Cost</th>
+                      <th className="px-4 py-2.5 font-medium">Line Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {viewOrder.items.map((item) => (
+                      <tr key={item.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
+                        <td className="px-4 py-2.5 text-foreground">
+                          {item.name}
+                          <div className="text-xs text-muted">{item.partNumber || '-'} {item.brandName ? `· ${item.brandName}` : ''}</div>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className={item.isNew ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}>{item.isNew ? 'New Item' : 'Existing'}</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-muted">{conditionLabel(item.condition)}</td>
+                        <td className="px-4 py-2.5 text-muted">{item.quantity}</td>
+                        <td className="px-4 py-2.5 text-muted">{formatCurrency(item.estimatedCost)}</td>
+                        <td className="px-4 py-2.5 font-medium text-foreground">{formatCurrency(Number(item.estimatedCost) * item.quantity)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <p className="text-sm font-semibold text-foreground">Estimated Total: {formatCurrency(viewOrder.totalEstimatedCost)}</p>
+            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-muted p-4">
+              <p className="text-base font-semibold text-foreground">Estimated Total: {formatCurrency(viewOrder.totalEstimatedCost)}</p>
               <Button type="button" variant="secondary" onClick={() => handleDownload(viewOrder)} disabled={downloadingId === viewOrder.id}>
                 {downloadingId === viewOrder.id ? 'Downloading...' : 'Download PDF'}
               </Button>

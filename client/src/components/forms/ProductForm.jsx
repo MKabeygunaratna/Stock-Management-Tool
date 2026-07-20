@@ -12,6 +12,7 @@ const emptyForm = {
   unit: 'pcs',
   brandId: '',
   categoryId: '',
+  supplierId: '',
   costPrice: '',
   sellingPrice: '',
   currentStock: '',
@@ -19,7 +20,7 @@ const emptyForm = {
   condition: 'NEW',
 };
 
-export default function ProductForm({ brands, categories, initial, onSubmit, onCancel }) {
+export default function ProductForm({ brands, categories, suppliers = [], initial, onSubmit, onCancel }) {
   const [form, setForm] = useState(() =>
     initial
       ? {
@@ -29,6 +30,7 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
           unit: initial.unit,
           brandId: String(initial.brandId),
           categoryId: initial.categoryId ? String(initial.categoryId) : '',
+          supplierId: initial.supplierId ? String(initial.supplierId) : '',
           costPrice: initial.costPrice,
           sellingPrice: initial.sellingPrice,
           currentStock: initial.currentStock,
@@ -103,6 +105,17 @@ export default function ProductForm({ brands, categories, initial, onSubmit, onC
             <option value="RECONDITION">Recondition</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Supplier (optional)</label>
+        <select value={form.supplierId} onChange={handleChange('supplierId')} className={inputClass}>
+          <option value="">No usual supplier</option>
+          {suppliers.map((s) => (
+            <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-muted">Who you usually buy this part from — pre-fills the supplier when you stock it in.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

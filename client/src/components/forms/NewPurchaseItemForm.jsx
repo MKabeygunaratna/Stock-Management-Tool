@@ -45,7 +45,7 @@ export default function NewPurchaseItemForm({ onSubmit, onCancel }) {
         <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} required autoFocus />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className={labelClass}>Part Number (optional)</label>
           <input value={partNumber} onChange={(e) => setPartNumber(e.target.value)} className={inputClass} />
@@ -64,7 +64,7 @@ export default function NewPurchaseItemForm({ onSubmit, onCancel }) {
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className={labelClass}>Quantity</label>
           <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className={inputClass} required />

@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Package, Plus, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/products.api';
 import { getBrands } from '../api/brands.api';
 import { getCategories } from '../api/categories.api';
+import { getAllSuppliers } from '../api/suppliers.api';
 import { formatCurrency } from '../utils/currency';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -20,16 +22,18 @@ export default function Products() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const isAdmin = user?.role === 'ADMIN';
+  const [searchParams] = useSearchParams();
 
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [brandId, setBrandId] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [lowStock, setLowStock] = useState(false);
+  const [lowStock, setLowStock] = useState(searchParams.get('lowStock') === 'true');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -57,6 +61,7 @@ export default function Products() {
   useEffect(() => {
     getBrands().then(setBrands).catch(() => {});
     getCategories().then(setCategories).catch(() => {});
+    getAllSuppliers().then(setSuppliers).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -78,6 +83,7 @@ export default function Products() {
       ...form,
       brandId: Number(form.brandId),
       categoryId: form.categoryId ? Number(form.categoryId) : null,
+      supplierId: form.supplierId ? Number(form.supplierId) : null,
       costPrice: Number(form.costPrice),
       sellingPrice: Number(form.sellingPrice),
       currentStock: form.currentStock !== '' ? Number(form.currentStock) : 0,
@@ -103,7 +109,7 @@ export default function Products() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <PageHeader
         icon={Package}
         title="Spare Parts"
@@ -169,6 +175,7 @@ export default function Products() {
                 <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Brand</th>
                 <th className="px-4 py-2 font-medium">Category</th>
+                <th className="px-4 py-2 font-medium">Supplier</th>
                 <th className="px-4 py-2 font-medium">Condition</th>
                 <th className="px-4 py-2 font-medium">Stock</th>
                 <th className="px-4 py-2 font-medium">Selling Price</th>
@@ -177,11 +184,12 @@ export default function Products() {
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+                <tr key={p.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
                   <td className="px-4 py-2 text-muted">{p.partNumber}</td>
                   <td className="px-4 py-2 text-foreground">{p.name}</td>
                   <td className="px-4 py-2 text-muted">{p.brand.name}</td>
                   <td className="px-4 py-2 text-muted">{p.category?.name || '-'}</td>
+                  <td className="px-4 py-2 text-muted">{p.supplier?.name || '-'}</td>
                   <td className="px-4 py-2">
                     <span className={p.condition === 'RECONDITION' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}>
                       {p.condition === 'RECONDITION' ? 'Recondition' : 'Brand New'}
@@ -202,7 +210,7 @@ export default function Products() {
               ))}
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 8 : 7}>
+                  <td colSpan={isAdmin ? 9 : 8}>
                     <EmptyState icon={Package} message="No parts found" />
                   </td>
                 </tr>
@@ -217,6 +225,7 @@ export default function Products() {
         <ProductForm
           brands={brands}
           categories={categories}
+          suppliers={suppliers}
           initial={editing}
           onSubmit={handleSubmit}
           onCancel={() => setModalOpen(false)}

@@ -18,10 +18,16 @@ const accountRoutes = require("./routes/account.routes");
 const purchaseRoutes = require("./routes/purchase.routes");
 const customerRoutes = require("./routes/customer.routes");
 const paymentRoutes = require("./routes/payment.routes");
+const supplierRoutes = require("./routes/supplier.routes");
+const supplierPaymentRoutes = require("./routes/supplierPayment.routes");
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
+const allowedOrigins = (
+  process.env.CLIENT_ORIGIN ||
+  "http://localhost:5173" ||
+  "http://192.168.8.14:5173"
+)
   .split(",")
   .map((o) => o.trim());
 
@@ -62,6 +68,8 @@ app.use("/api/accounts", auth, accountRoutes);
 app.use("/api/purchases", auth, purchaseRoutes);
 app.use("/api/customers", auth, customerRoutes);
 app.use("/api/payments", auth, paymentRoutes);
+app.use("/api/suppliers", auth, supplierRoutes);
+app.use("/api/supplier-payments", auth, supplierPaymentRoutes);
 
 // Serve index.html for all non-API routes (SPA fallback)
 app.get("*", (req, res) => {

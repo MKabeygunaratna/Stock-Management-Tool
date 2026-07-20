@@ -70,7 +70,7 @@ export default function NameCrudPage({ title, icon, api }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <PageHeader
         icon={icon}
         title={title}
@@ -86,7 +86,7 @@ export default function NameCrudPage({ title, icon, api }) {
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="rounded-lg border border-border bg-card/95 shadow-sm">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">
               <th className="px-4 py-2 font-medium">Name</th>
@@ -97,7 +97,7 @@ export default function NameCrudPage({ title, icon, api }) {
             {items.map((item) => (
               <tr
                 key={item.id}
-                className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40"
+                className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40"
               >
                 <td className="px-4 py-2 text-foreground">
                   {item.name}
@@ -131,7 +131,7 @@ export default function NameCrudPage({ title, icon, api }) {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <Modal

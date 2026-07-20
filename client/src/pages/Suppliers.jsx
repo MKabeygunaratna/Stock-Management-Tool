@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Users2, Plus, Search, Receipt, Wallet, Scale } from 'lucide-react';
-import { getCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer } from '../api/customers.api';
-import { recordPayment } from '../api/payments.api';
+import { Truck, Plus, Search, Receipt, Wallet, Scale } from 'lucide-react';
+import { getSuppliers, getSupplier, createSupplier, updateSupplier, deleteSupplier } from '../api/suppliers.api';
+import { recordSupplierPayment } from '../api/supplierPayments.api';
 import { formatCurrency } from '../utils/currency';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/common/Modal';
@@ -11,7 +11,7 @@ import Button from '../components/common/Button';
 import Pagination from '../components/common/Pagination';
 import EmptyState from '../components/common/EmptyState';
 import Spinner from '../components/common/Spinner';
-import CustomerForm from '../components/forms/CustomerForm';
+import SupplierForm from '../components/forms/SupplierForm';
 import RecordPaymentForm from '../components/forms/RecordPaymentForm';
 
 const balanceTone = (balance) => {
@@ -20,10 +20,10 @@ const balanceTone = (balance) => {
   return 'text-muted';
 };
 
-export default function Customers() {
+export default function Suppliers() {
   const { showToast } = useToast();
 
-  const [customers, setCustomers] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
@@ -39,12 +39,12 @@ export default function Customers() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   const load = useCallback(() => {
-    getCustomers({ page, search: search || undefined })
+    getSuppliers({ page, search: search || undefined })
       .then((data) => {
-        setCustomers(data.items);
+        setSuppliers(data.items);
         setTotalPages(data.totalPages);
       })
-      .catch(() => setError('Failed to load customers'));
+      .catch(() => setError('Failed to load suppliers'));
   }, [page, search]);
 
   useEffect(load, [load]);
@@ -54,42 +54,42 @@ export default function Customers() {
     setModalOpen(true);
   };
 
-  const openEdit = (customer) => {
-    setEditing(customer);
+  const openEdit = (supplier) => {
+    setEditing(supplier);
     setModalOpen(true);
   };
 
   const handleSubmit = async (payload) => {
     if (editing) {
-      await updateCustomer(editing.id, payload);
-      showToast('Customer updated');
+      await updateSupplier(editing.id, payload);
+      showToast('Supplier updated');
     } else {
-      await createCustomer(payload);
-      showToast('Customer created');
+      await createSupplier(payload);
+      showToast('Supplier created');
     }
     setModalOpen(false);
     load();
   };
 
   const handleDelete = async () => {
-    const res = await deleteCustomer(deleteTarget.id);
+    const res = await deleteSupplier(deleteTarget.id);
     showToast(res.message);
     setDeleteTarget(null);
     load();
   };
 
-  const loadStatement = (customer) => {
-    setStatementFor(customer);
+  const loadStatement = (supplier) => {
+    setStatementFor(supplier);
     setStatement(null);
     setStatementLoading(true);
-    getCustomer(customer.id)
+    getSupplier(supplier.id)
       .then(setStatement)
-      .catch(() => showToast('Failed to load customer statement', 'error'))
+      .catch(() => showToast('Failed to load supplier statement', 'error'))
       .finally(() => setStatementLoading(false));
   };
 
   const handleRecordPayment = async (payload) => {
-    await recordPayment({ ...payload, customerId: statementFor.id });
+    await recordSupplierPayment({ ...payload, supplierId: statementFor.id });
     showToast('Payment recorded');
     setPaymentModalOpen(false);
     loadStatement(statementFor);
@@ -99,10 +99,10 @@ export default function Customers() {
   return (
     <div className="space-y-4 animate-fade-in">
       <PageHeader
-        icon={Users2}
-        title="Customers"
-        subtitle="Manage running credit accounts and dues"
-        action={<Button onClick={openCreate}><Plus size={16} /> Add Customer</Button>}
+        icon={Truck}
+        title="Suppliers"
+        subtitle="Manage supplier details and running credit owed"
+        action={<Button onClick={openCreate}><Plus size={16} /> Add Supplier</Button>}
       />
 
       <div className="relative max-w-sm">
@@ -124,30 +124,28 @@ export default function Customers() {
               <th className="px-4 py-2 font-medium">Name</th>
               <th className="px-4 py-2 font-medium">Company</th>
               <th className="px-4 py-2 font-medium">Phone</th>
-              <th className="px-4 py-2 font-medium">Credit Limit</th>
               <th className="px-4 py-2 font-medium">Balance Owed</th>
               <th className="px-4 py-2 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {customers.map((c) => (
-              <tr key={c.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
-                <td className="px-4 py-2 font-medium text-foreground">{c.name}</td>
-                <td className="px-4 py-2 text-muted">{c.company || '-'}</td>
-                <td className="px-4 py-2 text-muted">{c.phone || '-'}</td>
-                <td className="px-4 py-2 text-muted">{c.creditLimit != null ? formatCurrency(c.creditLimit) : 'No limit'}</td>
-                <td className={`px-4 py-2 font-medium ${balanceTone(c.balance)}`}>{formatCurrency(c.balance)}</td>
+            {suppliers.map((s) => (
+              <tr key={s.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40 transition-colors">
+                <td className="px-4 py-2 font-medium text-foreground">{s.name}</td>
+                <td className="px-4 py-2 text-muted">{s.company || '-'}</td>
+                <td className="px-4 py-2 text-muted">{s.phone || '-'}</td>
+                <td className={`px-4 py-2 font-medium ${balanceTone(s.balance)}`}>{formatCurrency(s.balance)}</td>
                 <td className="px-4 py-2">
-                  <button onClick={() => loadStatement(c)} className="mr-3 text-amber-500 hover:underline">Statement</button>
-                  <button onClick={() => openEdit(c)} className="mr-3 text-amber-500 hover:underline">Edit</button>
-                  <button onClick={() => setDeleteTarget(c)} className="text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                  <button onClick={() => loadStatement(s)} className="mr-3 text-amber-500 hover:underline">Statement</button>
+                  <button onClick={() => openEdit(s)} className="mr-3 text-amber-500 hover:underline">Edit</button>
+                  <button onClick={() => setDeleteTarget(s)} className="text-red-600 dark:text-red-400 hover:underline">Delete</button>
                 </td>
               </tr>
             ))}
-            {customers.length === 0 && (
+            {suppliers.length === 0 && (
               <tr>
-                <td colSpan={6}>
-                  <EmptyState icon={Users2} message="No customers found" />
+                <td colSpan={5}>
+                  <EmptyState icon={Truck} message="No suppliers found" />
                 </td>
               </tr>
             )}
@@ -156,13 +154,13 @@ export default function Customers() {
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
-      <Modal open={modalOpen} title={editing ? 'Edit Customer' : 'Add Customer'} onClose={() => setModalOpen(false)}>
-        <CustomerForm initial={editing} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
+      <Modal open={modalOpen} title={editing ? 'Edit Supplier' : 'Add Supplier'} onClose={() => setModalOpen(false)}>
+        <SupplierForm initial={editing} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
       </Modal>
 
       <ConfirmDialog
         open={!!deleteTarget}
-        message={`Delete "${deleteTarget?.name}"? Customers with invoice or payment history will be disabled instead of deleted.`}
+        message={`Delete "${deleteTarget?.name}"? Suppliers with stock or payment history will be disabled instead of deleted.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
@@ -175,8 +173,8 @@ export default function Customers() {
               <div className="flex items-start gap-2.5">
                 <Receipt size={16} className="mt-0.5 shrink-0 text-amber-500" />
                 <div>
-                  <p className="text-xs text-muted">Total Invoiced</p>
-                  <p className="text-sm font-medium text-foreground">{formatCurrency(statement.totalInvoiced)}</p>
+                  <p className="text-xs text-muted">Total Credit Stock-Ins</p>
+                  <p className="text-sm font-medium text-foreground">{formatCurrency(statement.totalCredit)}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
@@ -224,7 +222,7 @@ export default function Customers() {
                     {statement.ledger.length === 0 && (
                       <tr>
                         <td colSpan={5}>
-                          <EmptyState icon={Users2} message="No invoices or payments yet" />
+                          <EmptyState icon={Truck} message="No credit stock-ins or payments yet" />
                         </td>
                       </tr>
                     )}

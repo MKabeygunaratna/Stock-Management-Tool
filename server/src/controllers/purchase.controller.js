@@ -24,6 +24,7 @@ const list = async (req, res, next) => {
       where.OR = [
         { orderNumber: { contains: search, mode: 'insensitive' } },
         { supplierName: { contains: search, mode: 'insensitive' } },
+        { supplier: { is: { name: { contains: search, mode: 'insensitive' } } } },
       ];
     }
     if (from || to) {
@@ -42,6 +43,7 @@ const list = async (req, res, next) => {
         include: {
           items: { select: { id: true } },
           user: { select: { id: true, username: true, fullName: true } },
+          supplier: true,
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -69,6 +71,7 @@ const getOne = async (req, res, next) => {
       include: {
         items: true,
         user: { select: { id: true, username: true, fullName: true } },
+        supplier: true,
       },
     });
     if (!order) throw new AppError(404, 'Purchase order not found');
@@ -80,7 +83,7 @@ const getOne = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { supplierName, notes, items } = req.body;
+    const { supplierName, supplierId, notes, items } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       throw new AppError(400, 'At least one item is required');
@@ -115,10 +118,17 @@ const create = async (req, res, next) => {
         : [];
       const productMap = new Map(products.map((p) => [p.id, p]));
 
+      let supplier = null;
+      if (supplierId) {
+        supplier = await tx.supplier.findUnique({ where: { id: Number(supplierId) } });
+        if (!supplier || !supplier.isActive) throw new AppError(404, 'Supplier not found');
+      }
+
       const draftOrder = await tx.purchaseOrder.create({
         data: {
           orderNumber: 'PENDING',
-          supplierName: supplierName || null,
+          supplierId: supplier?.id || null,
+          supplierName: supplier ? supplier.name : (supplierName || null),
           notes: notes || null,
           userId: req.user.id,
           totalEstimatedCost: 0,
@@ -157,6 +167,7 @@ const create = async (req, res, next) => {
         include: {
           items: true,
           user: { select: { id: true, username: true, fullName: true } },
+          supplier: true,
         },
       });
     }));

@@ -14,10 +14,14 @@ import StockHistory from './pages/StockHistory';
 import Invoices from './pages/Invoices';
 import Purchases from './pages/Purchases';
 import Customers from './pages/Customers';
+import Suppliers from './pages/Suppliers';
 import Brands from './pages/Brands';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
-import Accounts from './pages/Accounts';
+import AccountsOverview from './pages/accounts/AccountsOverview';
+import OverduePayments from './pages/accounts/OverduePayments';
+import ReceivablesPayables from './pages/accounts/ReceivablesPayables';
+import InvoiceProfitLoss from './pages/accounts/InvoiceProfitLoss';
 
 export default function App() {
   return (
@@ -38,12 +42,16 @@ export default function App() {
                   <Route path="/invoices" element={<Invoices />} />
                   <Route path="/purchases" element={<Purchases />} />
                   <Route path="/customers" element={<Customers />} />
+                  <Route path="/suppliers" element={<Suppliers />} />
 
                   <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                     <Route path="/brands" element={<Brands />} />
                     <Route path="/categories" element={<Categories />} />
                     <Route path="/users" element={<Users />} />
-                    <Route path="/accounts" element={<Accounts />} />
+                    <Route path="/accounts" element={<AccountsOverview />} />
+                    <Route path="/accounts/overdue" element={<OverduePayments />} />
+                    <Route path="/accounts/outstanding" element={<ReceivablesPayables />} />
+                    <Route path="/accounts/invoices" element={<InvoiceProfitLoss />} />
                   </Route>
                 </Route>
               </Route>

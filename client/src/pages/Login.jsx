@@ -54,10 +54,10 @@ export default function Login() {
 
       <form
         onSubmit={handleSubmit}
-        className="relative w-full max-w-md rounded-2xl border border-border/50 bg-card/95 backdrop-blur-sm p-10 shadow-2xl shadow-black/60"
+        className="relative w-full max-w-md animate-scale-in rounded-2xl border border-border/50 bg-card/95 backdrop-blur-sm p-10 shadow-2xl shadow-black/60"
       >
         <div className="mb-8 flex flex-col items-center text-center">
-          <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-500 dark:text-amber-400">
+          <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-500 shadow-lg shadow-amber-500/10 transition-transform duration-300 hover:scale-105 dark:text-amber-400">
             <Wrench size={28} strokeWidth={1.5} />
           </span>
           <h1 className="text-2xl font-bold text-foreground">
@@ -69,7 +69,7 @@ export default function Login() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
+          <div className="mb-6 animate-shake rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
             {error}
           </div>
         )}
@@ -83,7 +83,7 @@ export default function Login() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
-              className="w-full rounded-lg border border-input bg-surface-muted/50 px-4 py-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full rounded-lg border border-input bg-surface-muted/50 px-4 py-3 text-sm text-foreground placeholder-muted transition-colors duration-150 focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-amber-500/30"
               required
             />
           </div>
@@ -97,7 +97,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full rounded-lg border border-input bg-surface-muted/50 px-4 py-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full rounded-lg border border-input bg-surface-muted/50 px-4 py-3 text-sm text-foreground placeholder-muted transition-colors duration-150 focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-amber-500/30"
               required
             />
           </div>

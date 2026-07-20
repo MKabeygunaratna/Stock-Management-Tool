@@ -23,6 +23,11 @@ enum PartCondition {
   RECONDITION
 }
 
+enum PaymentType {
+  CASH
+  CREDIT
+}
+
 model User {
   id           Int             @id @default(autoincrement())
   username     String          @unique
@@ -37,6 +42,7 @@ model User {
   refreshTokens RefreshToken[]
   purchaseOrders PurchaseOrder[]
   payments      Payment[]
+  supplierPayments SupplierPayment[]
 
   @@map("users")
 }
@@ -89,6 +95,8 @@ model Product {
   brand        Brand           @relation(fields: [brandId], references: [id])
   categoryId   Int?
   category     Category?       @relation(fields: [categoryId], references: [id])
+  supplierId   Int?
+  supplier     Supplier?       @relation(fields: [supplierId], references: [id])
   costPrice    Decimal         @default(0) @db.Decimal(12, 2)
   sellingPrice Decimal         @default(0) @db.Decimal(12, 2)
   currentStock Int             @default(0)
@@ -102,6 +110,7 @@ model Product {
 
   @@index([brandId])
   @@index([categoryId])
+  @@index([supplierId])
   @@map("products")
 }
 
@@ -120,6 +129,9 @@ model StockMovement {
   stockAfter Int
   invoiceId  Int?
   invoice    Invoice?     @relation(fields: [invoiceId], references: [id])
+  supplierId Int?
+  supplier   Supplier?    @relation(fields: [supplierId], references: [id])
+  paymentType PaymentType?
   createdAt  DateTime     @default(now())
 
   @@index([productId])
@@ -127,6 +139,7 @@ model StockMovement {
   @@index([type])
   @@index([createdAt])
   @@index([invoiceId])
+  @@index([supplierId])
   @@map("stock_movements")
 }
 
@@ -183,6 +196,8 @@ model PurchaseOrder {
   id                 Int                 @id @default(autoincrement())
   orderNumber        String              @unique
   supplierName       String?
+  supplierId         Int?
+  supplier           Supplier?           @relation(fields: [supplierId], references: [id])
   notes              String?
   userId             Int
   user               User                @relation(fields: [userId], references: [id])
@@ -190,7 +205,41 @@ model PurchaseOrder {
   createdAt          DateTime            @default(now())
   items              PurchaseOrderItem[]
 
+  @@index([supplierId])
   @@map("purchase_orders")
+}
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  name           String
+  company        String?
+  phone          String?
+  address        String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+  stockMovements StockMovement[]
+  payments       SupplierPayment[]
+  products       Product[]
+
+  @@map("suppliers")
+}
+
+model SupplierPayment {
+  id         Int      @id @default(autoincrement())
+  supplierId Int
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  amount     Decimal  @db.Decimal(12, 2)
+  method     String?
+  reference  String?
+  notes      String?
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([supplierId])
+  @@map("supplier_payments")
 }
 
 model PurchaseOrderItem {

@@ -76,7 +76,7 @@ export default function Users() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       <PageHeader
         icon={UsersIcon}
         title="Users"
@@ -99,7 +99,7 @@ export default function Users() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+              <tr key={u.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
                 <td className="px-4 py-2 text-foreground">{u.username}</td>
                 <td className="px-4 py-2 text-foreground">{u.fullName}</td>
                 <td className="px-4 py-2 text-muted">{u.role}</td>

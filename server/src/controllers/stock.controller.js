@@ -4,23 +4,47 @@ const withRetry = require('../utils/withRetry');
 
 const stockIn = async (req, res, next) => {
   try {
-    const { productId, quantity, reason, reference } = req.body;
+    const { productId, quantity, reason, reference, supplierId, paidAmount } = req.body;
     const qty = Number(quantity);
 
     if (!productId || !qty || qty <= 0) {
       throw new AppError(400, 'productId and a positive quantity are required');
     }
 
+    let paid;
+    if (paidAmount !== undefined && paidAmount !== null && paidAmount !== '') {
+      paid = Number(paidAmount);
+      if (Number.isNaN(paid) || paid < 0) {
+        throw new AppError(400, 'paidAmount must be zero or a positive number');
+      }
+    }
+    if (paid !== undefined && !supplierId) {
+      throw new AppError(400, 'supplierId is required when paidAmount is set');
+    }
+
     const movement = await withRetry(() => prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({ where: { id: Number(productId) } });
       if (!product || !product.isActive) throw new AppError(404, 'Product not found');
+
+      let supplier = null;
+      if (supplierId) {
+        supplier = await tx.supplier.findUnique({ where: { id: Number(supplierId) } });
+        if (!supplier || !supplier.isActive) throw new AppError(404, 'Supplier not found');
+      }
 
       const updated = await tx.product.update({
         where: { id: product.id },
         data: { currentStock: { increment: qty } },
       });
 
-      return tx.stockMovement.create({
+      // Total cost is fixed at the product's cost price at the time of this
+      // stock-in, matching how the payable ledger values every credit movement.
+      const totalCost = qty * Number(product.costPrice);
+      const paidForThis = supplier ? Math.min(paid ?? 0, totalCost) : 0;
+      const fullyPaid = supplier ? paidForThis >= totalCost - 0.005 : false;
+      const paymentType = supplier ? (fullyPaid ? 'CASH' : 'CREDIT') : null;
+
+      const created = await tx.stockMovement.create({
         data: {
           productId: product.id,
           userId: req.user.id,
@@ -31,9 +55,28 @@ const stockIn = async (req, res, next) => {
           reason: reason || null,
           reference: reference || null,
           stockAfter: updated.currentStock,
+          supplierId: supplier?.id || null,
+          paymentType,
         },
-        include: { product: true },
+        include: { product: true, supplier: true },
       });
+
+      // A partial payment made on a credit stock-in: record it immediately so
+      // the supplier's payable balance already reflects only the remainder.
+      if (supplier && paymentType === 'CREDIT' && paidForThis > 0.005) {
+        await tx.supplierPayment.create({
+          data: {
+            supplierId: supplier.id,
+            amount: paidForThis,
+            method: 'Cash',
+            reference: reference || null,
+            notes: `Paid at stock-in of ${qty} x ${product.name}`,
+            userId: req.user.id,
+          },
+        });
+      }
+
+      return created;
     }, { timeout: 15000 }));
 
     res.status(201).json(movement);

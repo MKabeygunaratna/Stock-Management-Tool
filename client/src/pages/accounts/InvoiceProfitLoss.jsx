@@ -1,32 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Wallet, TrendingUp, TrendingDown, Receipt } from 'lucide-react';
-import { getAccountInvoices, getAccountSummary } from '../api/accounts.api';
-import { formatCurrency } from '../utils/currency';
-import PageHeader from '../components/common/PageHeader';
-import Pagination from '../components/common/Pagination';
-import EmptyState from '../components/common/EmptyState';
+import { useSearchParams } from 'react-router-dom';
+import { Receipt, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { getAccountInvoices, getAccountSummary } from '../../api/accounts.api';
+import { formatCurrency } from '../../utils/currency';
+import PageHeader from '../../components/common/PageHeader';
+import Pagination from '../../components/common/Pagination';
+import EmptyState from '../../components/common/EmptyState';
+import StatCard from '../../components/common/StatCard';
 
 const inputClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
 
-function StatCard({ icon: Icon, label, value, tone }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 text-muted">
-        <Icon size={14} />
-        <p className="text-sm">{label}</p>
-      </div>
-      <p className={`mt-1 text-2xl font-semibold ${tone || 'text-foreground'}`}>{value}</p>
-    </div>
-  );
-}
-
-export default function Accounts() {
+export default function InvoiceProfitLoss() {
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [summaryData, setSummaryData] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [from, setFrom] = useState(searchParams.get('from') || '');
+  const [to, setTo] = useState(searchParams.get('to') || '');
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
@@ -36,17 +27,44 @@ export default function Accounts() {
         setItems(data.items);
         setTotalPages(data.totalPages);
       })
-      .catch(() => setError('Failed to load accounts'));
+      .catch(() => setError('Failed to load invoices'));
     getAccountSummary(params)
       .then(setSummaryData)
-      .catch(() => setError('Failed to load accounts'));
+      .catch(() => setError('Failed to load profit & loss summary'));
   }, [page, from, to]);
 
   useEffect(load, [load]);
 
+  const rangeLabel = from && to
+    ? `${new Date(from).toLocaleDateString()} – ${new Date(to).toLocaleDateString()}`
+    : null;
+
+  const clearFilter = () => {
+    setPage(1);
+    setFrom('');
+    setTo('');
+  };
+
   return (
-    <div className="space-y-4">
-      <PageHeader icon={Wallet} title="Accounts" subtitle="Profit and loss per stock-out invoice" />
+    <div className="space-y-4 animate-fade-in">
+      <PageHeader icon={Receipt} title="Invoice Profit & Loss" subtitle="Per-invoice revenue, cost, and profit breakdown" />
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {rangeLabel ? (
+          <button
+            onClick={clearFilter}
+            className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
+          >
+            {rangeLabel} &times;
+          </button>
+        ) : <span />}
+        <div className="flex flex-wrap items-center gap-2">
+          <input type="date" value={from} onChange={(e) => { setPage(1); setFrom(e.target.value); }} className={inputClass} />
+          <input type="date" value={to} onChange={(e) => { setPage(1); setTo(e.target.value); }} className={inputClass} />
+        </div>
+      </div>
+
+      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
       {summaryData && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -61,13 +79,6 @@ export default function Accounts() {
           />
         </div>
       )}
-
-      <div className="flex flex-wrap gap-3">
-        <input type="date" value={from} onChange={(e) => { setPage(1); setFrom(e.target.value); }} className={inputClass} />
-        <input type="date" value={to} onChange={(e) => { setPage(1); setTo(e.target.value); }} className={inputClass} />
-      </div>
-
-      {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="rounded-lg border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
@@ -85,7 +96,7 @@ export default function Accounts() {
           </thead>
           <tbody>
             {items.map((inv) => (
-              <tr key={inv.id} className="border-b border-border/60 last:border-0 hover:bg-surface-muted/40">
+              <tr key={inv.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-surface-muted/40">
                 <td className="px-4 py-2 font-medium text-foreground">{inv.invoiceNumber}</td>
                 <td className="px-4 py-2 text-muted">{new Date(inv.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-2 text-foreground">{inv.buyerName}</td>
