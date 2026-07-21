@@ -98,40 +98,42 @@ export default function ProductForm({ brands, categories, suppliers = [], initia
         <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
       )}
 
-      <div>
-        <div className="mb-1 flex items-center justify-between">
-          <label className="text-sm font-medium text-muted">Part Number</label>
-          {!initial && suggesting && (
-            <span className="text-xs text-muted">Suggesting...</span>
-          )}
-          {!initial && !suggesting && suggestion && suggestion !== form.partNumber && (
-            <button
-              type="button"
-              onClick={applySuggestion}
-              className="text-xs font-medium text-amber-600 hover:underline dark:text-amber-400"
-            >
-              Use suggested: {suggestion}
-            </button>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-sm font-medium text-muted">Part Number</label>
+            {!initial && suggesting && (
+              <span className="text-xs text-muted">Suggesting...</span>
+            )}
+            {!initial && !suggesting && suggestion && suggestion !== form.partNumber && (
+              <button
+                type="button"
+                onClick={applySuggestion}
+                className="text-xs font-medium text-amber-600 hover:underline dark:text-amber-400"
+              >
+                Use suggested: {suggestion}
+              </button>
+            )}
+          </div>
+          <input
+            value={form.partNumber}
+            onChange={handlePartNumberChange}
+            className={inputClass}
+            placeholder={!initial ? 'Select a brand to get a suggestion' : undefined}
+            required
+            disabled={!!initial}
+          />
+          {!initial && (
+            <p className="mt-1 text-xs text-muted">
+              Auto-suggested from brand &amp; category — feel free to edit it.
+            </p>
           )}
         </div>
-        <input
-          value={form.partNumber}
-          onChange={handlePartNumberChange}
-          className={inputClass}
-          placeholder={!initial ? 'Select a brand to get a suggestion' : undefined}
-          required
-          disabled={!!initial}
-        />
-        {!initial && (
-          <p className="mt-1 text-xs text-muted">
-            Auto-suggested from brand &amp; category — feel free to edit it.
-          </p>
-        )}
-      </div>
 
-      <div>
-        <label className={labelClass}>Name</label>
-        <input value={form.name} onChange={handleChange('name')} className={inputClass} required />
+        <div>
+          <label className={labelClass}>Name</label>
+          <input value={form.name} onChange={handleChange('name')} className={inputClass} required />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

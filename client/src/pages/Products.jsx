@@ -221,7 +221,7 @@ export default function Products() {
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
-      <Modal open={modalOpen} title={editing ? 'Edit Part' : 'Add Part'} onClose={() => setModalOpen(false)}>
+      <Modal open={modalOpen} title={editing ? 'Edit Part' : 'Add Part'} onClose={() => setModalOpen(false)} size="lg">
         <ProductForm
           brands={brands}
           categories={categories}
