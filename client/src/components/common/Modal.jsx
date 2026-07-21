@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 const sizes = {
@@ -9,10 +10,15 @@ const sizes = {
 export default function Modal({ open, title, onClose, children, size = "md" }) {
   if (!open) return null;
 
-  return (
+  // Rendered via portal directly under <body> — if nested in the page tree, an
+  // ancestor mid-animation (e.g. animate-fade-in's transform) becomes this
+  // element's containing block per the CSS transform spec, which breaks
+  // `fixed` positioning and traps the overlay inside that ancestor instead of
+  // covering the viewport.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex animate-overlay-in items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]">
-      <div className={`w-full ${sizes[size] || sizes.md} animate-scale-in rounded-lg border border-border bg-card p-6 shadow-xl shadow-black/40`}>
-        <div className="mb-4 flex items-center justify-between">
+      <div className={`flex w-full ${sizes[size] || sizes.md} max-h-[90vh] animate-scale-in flex-col rounded-lg border border-border bg-card shadow-xl shadow-black/40`}>
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <h3 className="text-lg font-semibold text-foreground">
             {title}
           </h3>
@@ -23,8 +29,9 @@ export default function Modal({ open, title, onClose, children, size = "md" }) {
             <X size={18} />
           </button>
         </div>
-        {children}
+        <div className="overflow-y-auto px-6 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -121,20 +121,20 @@ export default function Products() {
         )}
       />
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative">
+      <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="relative min-w-[220px] flex-1">
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             placeholder="Search by name or part number"
             value={search}
             onChange={(e) => { setPage(1); setSearch(e.target.value); }}
-            className="rounded-md border border-input bg-card py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
+            className="w-full rounded-md border border-input bg-surface-muted/50 py-2.5 pl-9 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
         </div>
         <select
           value={brandId}
           onChange={(e) => { setPage(1); setBrandId(e.target.value); }}
-          className="rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none"
+          className="min-w-[160px] rounded-md border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
         >
           <option value="">All Brands</option>
           {brands.map((b) => (
@@ -144,19 +144,19 @@ export default function Products() {
         <select
           value={categoryId}
           onChange={(e) => { setPage(1); setCategoryId(e.target.value); }}
-          className="rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none"
+          className="min-w-[160px] rounded-md border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm text-muted">
+        <label className="flex shrink-0 items-center gap-2 text-sm font-medium text-muted">
           <input
             type="checkbox"
             checked={lowStock}
             onChange={(e) => { setPage(1); setLowStock(e.target.checked); }}
-            className="accent-amber-500"
+            className="h-4 w-4 accent-amber-500"
           />
           Low stock only
         </label>

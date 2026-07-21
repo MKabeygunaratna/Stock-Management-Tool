@@ -24,6 +24,9 @@ export default function Users() {
 
   useEffect(load, []);
 
+  const activeAdminCount = users.filter((u) => u.role === 'ADMIN' && u.isActive).length;
+  const isSoleActiveAdmin = (u) => u.role === 'ADMIN' && u.isActive && activeAdminCount <= 1;
+
   const openCreate = () => {
     setEditing(null);
     setModalOpen(true);
@@ -47,10 +50,15 @@ export default function Users() {
   };
 
   const handleDisable = async () => {
-    await setUserStatus(disableTarget.id, false);
-    showToast('User disabled');
-    setDisableTarget(null);
-    load();
+    try {
+      await setUserStatus(disableTarget.id, false);
+      showToast('User disabled');
+      setDisableTarget(null);
+      load();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to disable user', 'error');
+      setDisableTarget(null);
+    }
   };
 
   const handleEnable = async (user) => {
@@ -111,11 +119,25 @@ export default function Users() {
                 <td className="px-4 py-2">
                   <button onClick={() => openEdit(u)} className="mr-3 text-amber-500 hover:underline">Edit</button>
                   {u.isActive ? (
-                    <button onClick={() => setDisableTarget(u)} className="mr-3 text-red-600 dark:text-red-400 hover:underline">Disable</button>
+                    <button
+                      onClick={() => setDisableTarget(u)}
+                      disabled={isSoleActiveAdmin(u)}
+                      title={isSoleActiveAdmin(u) ? 'At least one active admin must remain' : undefined}
+                      className="mr-3 text-red-600 hover:underline disabled:cursor-not-allowed disabled:text-muted disabled:no-underline dark:text-red-400"
+                    >
+                      Disable
+                    </button>
                   ) : (
                     <button onClick={() => handleEnable(u)} className="mr-3 text-emerald-600 dark:text-emerald-400 hover:underline">Enable</button>
                   )}
-                  <button onClick={() => setDeleteTarget(u)} className="text-red-500 hover:underline">Delete</button>
+                  <button
+                    onClick={() => setDeleteTarget(u)}
+                    disabled={isSoleActiveAdmin(u)}
+                    title={isSoleActiveAdmin(u) ? 'At least one active admin must remain' : undefined}
+                    className="text-red-500 hover:underline disabled:cursor-not-allowed disabled:text-muted disabled:no-underline"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -131,7 +153,12 @@ export default function Users() {
       </div>
 
       <Modal open={modalOpen} title={editing ? 'Edit User' : 'Add User'} onClose={() => setModalOpen(false)}>
-        <UserForm initial={editing} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
+        <UserForm
+          initial={editing}
+          lockRole={editing ? isSoleActiveAdmin(editing) : false}
+          onSubmit={handleSubmit}
+          onCancel={() => setModalOpen(false)}
+        />
       </Modal>
 
       <ConfirmDialog

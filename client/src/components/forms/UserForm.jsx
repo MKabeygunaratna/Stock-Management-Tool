@@ -5,7 +5,7 @@ const inputClass =
   'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50';
 const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
-export default function UserForm({ initial, onSubmit, onCancel }) {
+export default function UserForm({ initial, onSubmit, onCancel, lockRole }) {
   const [username, setUsername] = useState(initial?.username || '');
   const [fullName, setFullName] = useState(initial?.fullName || '');
   const [role, setRole] = useState(initial?.role || 'STAFF');
@@ -57,10 +57,20 @@ export default function UserForm({ initial, onSubmit, onCancel }) {
 
       <div>
         <label className={labelClass}>Role</label>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className={inputClass}
+          disabled={lockRole}
+        >
           <option value="STAFF">Staff</option>
           <option value="ADMIN">Admin</option>
         </select>
+        {lockRole && (
+          <p className="mt-1 text-xs text-muted">
+            This is the only active admin, so their role can't be changed. Promote another user to admin first.
+          </p>
+        )}
       </div>
 
       <div>
