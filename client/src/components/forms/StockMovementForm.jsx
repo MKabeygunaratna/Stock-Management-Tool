@@ -107,139 +107,157 @@ export default function StockMovementForm({ onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
       {error && (
-        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
+        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 lg:col-span-3">{error}</div>
       )}
 
-      <div>
-        <label className={labelClass}>Part</label>
-        <input
-          placeholder="Search by name or part number"
-          value={selected ? `${selected.partNumber} - ${selected.name}` : search}
-          onChange={(e) => { setSelected(null); setSearch(e.target.value); }}
-          className={inputClass}
-        />
-        {!selected && search && options.length > 0 && (
-          <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
-            {options.map((p) => (
-              <button
-                type="button"
-                key={p.id}
-                onClick={() => { setSelected(p); setSearch(''); }}
-                className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-muted"
-              >
-                <span className="font-medium">{p.partNumber}</span> - {p.name}
-                <span className="ml-2 text-xs text-muted">({p.brand.name}, stock: {p.currentStock})</span>
-              </button>
-            ))}
-          </div>
-        )}
-        {selected && (
-          <p className="mt-1 text-xs text-muted">
-            Current stock: {selected.currentStock} {selected.unit} — Brand: {selected.brand.name} — Cost: {formatCurrency(selected.costPrice)}/{selected.unit}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className={labelClass}>Quantity</label>
-        <input
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          className={inputClass}
-          required
-        />
-        {selected && qtyNum > 0 && (
-          <p className="mt-1 text-xs text-muted">Total cost: {formatCurrency(totalCost)}</p>
-        )}
-      </div>
-
-      <div>
-        <label className={labelClass}>Supplier (optional)</label>
-        <select
-          value={supplierId}
-          onChange={(e) => { setSupplierId(e.target.value); setPaidAmount(''); }}
-          className={inputClass}
-        >
-          <option value="">No supplier / not tracked</option>
-          {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
-          ))}
-        </select>
-      </div>
-
-      {supplierId && (
-        <div className="animate-fade-in space-y-2">
-          <label className={labelClass}>Payment</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setPaidAmount(totalCost > 0 ? totalCost.toFixed(2) : '')}
-              className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
-                totalCost > 0 && remaining <= 0.005
-                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                  : 'border-input bg-surface-muted text-muted hover:text-foreground'
-              }`}
-            >
-              <Banknote size={15} /> Paid in Full
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaidAmount('0')}
-              className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
-                paidNum === 0
-                  ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm'
-                  : 'border-input bg-surface-muted text-muted hover:text-foreground'
-              }`}
-            >
-              <CreditCard size={15} /> Full Credit
-            </button>
-          </div>
-
-          <div>
-            <label className={labelClass}>Amount Paid Now (Rs.)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={paidAmount}
-              onChange={(e) => setPaidAmount(e.target.value)}
-              placeholder="0.00"
-              className={inputClass}
-            />
-          </div>
-
-          {totalCost > 0 && (
-            <p className="text-xs text-muted">
-              {remaining > 0.005
-                ? `${formatCurrency(remaining)} will be added to ${selectedSupplier?.name || 'the supplier'}'s payable balance.`
-                : 'Fully paid — nothing will be added to payable.'}
+      <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:col-span-2">
+        <div>
+          <label className={labelClass}>Part</label>
+          <input
+            placeholder="Search by name or part number"
+            value={selected ? `${selected.partNumber} - ${selected.name}` : search}
+            onChange={(e) => { setSelected(null); setSearch(e.target.value); }}
+            className={inputClass}
+          />
+          {!selected && search && options.length > 0 && (
+            <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
+              {options.map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  onClick={() => { setSelected(p); setSearch(''); }}
+                  className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-surface-muted"
+                >
+                  <span className="font-medium">{p.partNumber}</span> - {p.name}
+                  <span className="ml-2 text-xs text-muted">({p.brand.name}, stock: {p.currentStock})</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {selected && (
+            <p className="mt-1 text-xs text-muted">
+              Current stock: {selected.currentStock} {selected.unit} — Brand: {selected.brand.name} — Cost: {formatCurrency(selected.costPrice)}/{selected.unit}
             </p>
           )}
         </div>
-      )}
 
-      <div>
-        <label className={labelClass}>Reason</label>
-        <input
-          placeholder="e.g. Purchase from supplier X"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className={inputClass}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass}>Quantity</label>
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className={inputClass}
+              required
+            />
+            {selected && qtyNum > 0 && (
+              <p className="mt-1 text-xs text-muted">Total cost: {formatCurrency(totalCost)}</p>
+            )}
+          </div>
+          <div>
+            <label className={labelClass}>Reference (invoice/PO number)</label>
+            <input value={reference} onChange={(e) => setReference(e.target.value)} className={inputClass} />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Reason</label>
+          <input
+            placeholder="e.g. Purchase from supplier X"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className={inputClass}
+          />
+        </div>
       </div>
 
-      <div>
-        <label className={labelClass}>Reference (invoice/PO number)</label>
-        <input value={reference} onChange={(e) => setReference(e.target.value)} className={inputClass} />
-      </div>
+      <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:sticky lg:top-4">
+        <div>
+          <label className={labelClass}>Supplier (optional)</label>
+          <select
+            value={supplierId}
+            onChange={(e) => { setSupplierId(e.target.value); setPaidAmount(''); }}
+            className={inputClass}
+          >
+            <option value="">No supplier / not tracked</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
+            ))}
+          </select>
+        </div>
 
-      <Button type="submit" variant="success" disabled={submitting} className="w-full">
-        {submitting ? 'Saving...' : 'Record Stock In'}
-      </Button>
+        {supplierId && (
+          <div className="animate-fade-in space-y-2">
+            <label className={labelClass}>Payment</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaidAmount(totalCost > 0 ? totalCost.toFixed(2) : '')}
+                className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
+                  totalCost > 0 && remaining <= 0.005
+                    ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    : 'border-input bg-surface-muted text-muted hover:text-foreground'
+                }`}
+              >
+                <Banknote size={15} /> Paid in Full
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaidAmount('0')}
+                className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
+                  paidNum === 0
+                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm'
+                    : 'border-input bg-surface-muted text-muted hover:text-foreground'
+                }`}
+              >
+                <CreditCard size={15} /> Full Credit
+              </button>
+            </div>
+
+            <div>
+              <label className={labelClass}>Amount Paid Now (Rs.)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+                placeholder="0.00"
+                className={inputClass}
+              />
+            </div>
+
+            {totalCost > 0 && (
+              <p className="text-xs text-muted">
+                {remaining > 0.005
+                  ? `${formatCurrency(remaining)} will be added to ${selectedSupplier?.name || 'the supplier'}'s payable balance.`
+                  : 'Fully paid — nothing will be added to payable.'}
+              </p>
+            )}
+          </div>
+        )}
+
+        {selected && qtyNum > 0 && (
+          <div className="border-t border-border pt-4 text-sm text-muted">
+            <div className="flex justify-between">
+              <span>Quantity</span>
+              <span className="text-foreground">{qtyNum} {selected.unit}</span>
+            </div>
+            <div className="mt-1 flex justify-between font-medium">
+              <span>Total Cost</span>
+              <span className="text-foreground">{formatCurrency(totalCost)}</span>
+            </div>
+          </div>
+        )}
+
+        <Button type="submit" variant="success" disabled={submitting} className="w-full">
+          {submitting ? 'Saving...' : 'Record Stock In'}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -164,18 +164,17 @@ export default function ProductForm({ brands, categories, suppliers = [], initia
         </div>
       </div>
 
-      <div>
-        <label className={labelClass}>Supplier (optional)</label>
-        <select value={form.supplierId} onChange={handleChange('supplierId')} className={inputClass}>
-          <option value="">No usual supplier</option>
-          {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
-          ))}
-        </select>
-        <p className="mt-1 text-xs text-muted">Who you usually buy this part from — pre-fills the supplier when you stock it in.</p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="lg:col-span-1">
+          <label className={labelClass}>Supplier (optional)</label>
+          <select value={form.supplierId} onChange={handleChange('supplierId')} className={inputClass}>
+            <option value="">No usual supplier</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}{s.company ? ` — ${s.company}` : ''}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-muted">Pre-fills when you stock it in.</p>
+        </div>
         <div>
           <label className={labelClass}>Unit</label>
           <input value={form.unit} onChange={handleChange('unit')} className={inputClass} />
