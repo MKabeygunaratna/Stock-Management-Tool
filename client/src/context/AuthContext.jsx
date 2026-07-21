@@ -30,8 +30,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const setNotificationsEnabled = async (enabled) => {
+    const data = await authApi.updateNotificationPreference(enabled);
+    setUser(data.user);
+    return data.user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, setNotificationsEnabled }}>
       {children}
     </AuthContext.Provider>
   );

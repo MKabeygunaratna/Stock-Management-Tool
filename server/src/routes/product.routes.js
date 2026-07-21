@@ -1,11 +1,12 @@
 const express = require('express');
 const roleGuard = require('../middleware/roleGuard');
-const { list, lowStock, getOne, create, update, remove } = require('../controllers/product.controller');
+const { list, lowStock, suggestPartNumber, getOne, create, update, remove } = require('../controllers/product.controller');
 
 const router = express.Router();
 
 router.get('/', list);
 router.get('/low-stock', lowStock);
+router.get('/suggest-part-number', roleGuard('ADMIN'), suggestPartNumber);
 router.get('/:id', getOne);
 router.post('/', roleGuard('ADMIN'), create);
 router.put('/:id', roleGuard('ADMIN'), update);

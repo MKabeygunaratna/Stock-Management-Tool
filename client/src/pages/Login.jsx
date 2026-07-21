@@ -1,25 +1,26 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Wrench } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/common/Button";
-import Spinner from "../components/common/Spinner";
+import SplashScreen from "../components/common/SplashScreen";
 import ThemeToggle from "../components/ThemeToggle";
+import logo from "../assets/logo.svg";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Spinner label="Checking session..." />
-      </div>
-    );
+    return <SplashScreen label="Checking session..." />;
+  }
+
+  if (signedIn) {
+    return <SplashScreen label="Welcome back, loading your dashboard..." />;
   }
 
   if (user) {
@@ -32,10 +33,10 @@ export default function Login() {
     setSubmitting(true);
     try {
       await login(username, password);
-      navigate("/");
+      setSignedIn(true);
+      setTimeout(() => navigate("/"), 900);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -57,10 +58,12 @@ export default function Login() {
         className="relative w-full max-w-md animate-scale-in rounded-2xl border border-border/50 bg-card/95 backdrop-blur-sm p-10 shadow-2xl shadow-black/60"
       >
         <div className="mb-8 flex flex-col items-center text-center">
-          <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-500 shadow-lg shadow-amber-500/10 transition-transform duration-300 hover:scale-105 dark:text-amber-400">
-            <Wrench size={28} strokeWidth={1.5} />
-          </span>
-          <h1 className="text-2xl font-bold text-foreground">
+          <img
+            src={logo}
+            alt="Nihon Auto Enterprises"
+            className="mb-5 h-16 w-auto rounded-lg bg-white px-3 py-2 shadow-lg shadow-black/10"
+          />
+          <h1 className="text-xl font-bold text-foreground">
             Spare Parts Inventory
           </h1>
           <p className="mt-2 text-sm font-medium text-muted">
@@ -112,7 +115,7 @@ export default function Login() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted">
-          © {new Date().getFullYear()} Spare Parts Management. All rights
+          © {new Date().getFullYear()} Nihon Auto Enterprises. All rights
           reserved.
         </p>
       </form>

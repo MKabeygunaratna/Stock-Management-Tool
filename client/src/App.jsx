@@ -19,6 +19,8 @@ import Brands from './pages/Brands';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
 import LoginHistory from './pages/LoginHistory';
+import Notifications from './pages/Notifications';
+import Settings from './pages/Settings';
 import AccountsOverview from './pages/accounts/AccountsOverview';
 import OverduePayments from './pages/accounts/OverduePayments';
 import ReceivablesPayables from './pages/accounts/ReceivablesPayables';
@@ -44,6 +46,8 @@ export default function App() {
                   <Route path="/purchases" element={<Purchases />} />
                   <Route path="/customers" element={<Customers />} />
                   <Route path="/suppliers" element={<Suppliers />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/settings" element={<Settings />} />
 
                   <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                     <Route path="/brands" element={<Brands />} />

@@ -1,16 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Spinner from './common/Spinner';
+import SplashScreen from './common/SplashScreen';
 
 export default function ProtectedRoute({ allowedRoles }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Spinner label="Checking session..." />
-      </div>
-    );
+    return <SplashScreen label="Checking session..." />;
   }
 
   if (!user) {

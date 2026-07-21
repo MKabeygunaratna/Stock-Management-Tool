@@ -20,6 +20,8 @@ import {
   ChevronDown,
   ShieldCheck,
   KeyRound,
+  Bell,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -33,6 +35,11 @@ const navItems = [
   { to: "/purchases", label: "Purchases", icon: ShoppingCart },
   { to: "/customers", label: "Customers", icon: Users2 },
   { to: "/suppliers", label: "Suppliers", icon: Truck },
+  { to: "/notifications", label: "Notifications", icon: Bell },
+];
+
+const generalItems = [
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const accountItems = [
@@ -138,6 +145,11 @@ export default function Sidebar({ open, onClose }) {
               <NavGroup label="Admin" icon={ShieldCheck} items={adminItems} onNavigate={onClose} />
             </div>
           )}
+          <div className="space-y-1 pt-2">
+            {generalItems.map((item) => (
+              <NavItem key={item.to} {...item} onNavigate={onClose} />
+            ))}
+          </div>
         </nav>
       </aside>
     </>

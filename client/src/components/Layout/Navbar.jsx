@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { Wrench, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../common/Button";
 import ThemeToggle from "../ThemeToggle";
 import NotificationBell from "./NotificationBell";
+import logo from "../../assets/logo.svg";
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
@@ -30,9 +31,11 @@ export default function Navbar({ onMenuClick }) {
         >
           <Menu size={20} />
         </button>
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-amber-500/10 text-amber-500">
-          <Wrench size={16} />
-        </span>
+        <img
+          src={logo}
+          alt="Nihon Auto Enterprises"
+          className="h-8 w-auto rounded bg-white px-1.5 py-1"
+        />
         <span className="hidden font-semibold text-foreground sm:inline">
           Spare Parts Inventory
         </span>

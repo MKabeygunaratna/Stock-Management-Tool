@@ -78,6 +78,42 @@ const lowStock = async (req, res, next) => {
   }
 };
 
+const toCode = (name) => name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 3) || 'GEN';
+
+const suggestPartNumber = async (req, res, next) => {
+  try {
+    const { brandId, categoryId } = req.query;
+    if (!brandId) throw new AppError(400, 'brandId is required');
+
+    const brand = await prisma.brand.findUnique({ where: { id: Number(brandId) } });
+    if (!brand) throw new AppError(404, 'Brand not found');
+
+    let category = null;
+    if (categoryId) {
+      category = await prisma.category.findUnique({ where: { id: Number(categoryId) } });
+      if (!category) throw new AppError(404, 'Category not found');
+    }
+
+    const prefix = `${toCode(brand.name)}-${category ? `${toCode(category.name)}-` : ''}`;
+
+    const existing = await prisma.product.findMany({
+      where: { partNumber: { startsWith: prefix } },
+      select: { partNumber: true },
+    });
+
+    const suffixPattern = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\d+)$`);
+    let maxSeq = 0;
+    for (const { partNumber } of existing) {
+      const match = partNumber.match(suffixPattern);
+      if (match) maxSeq = Math.max(maxSeq, Number(match[1]));
+    }
+
+    res.json({ partNumber: `${prefix}${String(maxSeq + 1).padStart(4, '0')}` });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getOne = async (req, res, next) => {
   try {
     const product = await prisma.product.findUnique({
@@ -175,4 +211,4 @@ const remove = async (req, res, next) => {
   }
 };
 
-module.exports = { list, lowStock, getOne, create, update, remove };
+module.exports = { list, lowStock, suggestPartNumber, getOne, create, update, remove };

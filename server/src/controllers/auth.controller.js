@@ -21,6 +21,7 @@ const toPublicUser = (user) => ({
   fullName: user.fullName,
   role: user.role,
   isActive: user.isActive,
+  notificationsEnabled: user.notificationsEnabled,
 });
 
 const issueSession = async (res, user) => {
@@ -180,4 +181,20 @@ const me = async (req, res, next) => {
   }
 };
 
-module.exports = { login, refresh, logout, me };
+const updateNotificationPreference = async (req, res, next) => {
+  try {
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+      throw new AppError(400, 'enabled must be a boolean');
+    }
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { notificationsEnabled: enabled },
+    });
+    res.json({ user: toPublicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { login, refresh, logout, me, updateNotificationPreference };

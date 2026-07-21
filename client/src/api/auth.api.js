@@ -6,3 +6,6 @@ export const login = (username, password) =>
 export const me = () => api.get('/auth/me').then((res) => res.data);
 
 export const logout = () => api.post('/auth/logout').then((res) => res.data);
+
+export const updateNotificationPreference = (enabled) =>
+  api.patch('/auth/notifications', { enabled }).then((res) => res.data);

@@ -243,7 +243,7 @@ export default function Customers() {
         )}
       </Modal>
 
-      <Modal open={paymentModalOpen} title="Record Payment" onClose={() => setPaymentModalOpen(false)}>
+      <Modal open={paymentModalOpen} title="Record Payment" onClose={() => setPaymentModalOpen(false)} size="lg">
         <RecordPaymentForm onSubmit={handleRecordPayment} onCancel={() => setPaymentModalOpen(false)} />
       </Modal>
     </div>

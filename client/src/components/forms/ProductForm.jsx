@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Button from '../common/Button';
+import { suggestPartNumber } from '../../api/products.api';
 
 const inputClass =
   'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50';
@@ -41,8 +42,42 @@ export default function ProductForm({ brands, categories, suppliers = [], initia
   );
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [suggestion, setSuggestion] = useState('');
+  const [suggesting, setSuggesting] = useState(false);
+  const [partNumberTouched, setPartNumberTouched] = useState(!!initial);
+  const requestIdRef = useRef(0);
 
   const handleChange = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+
+  const handlePartNumberChange = (e) => {
+    setPartNumberTouched(true);
+    setForm({ ...form, partNumber: e.target.value });
+  };
+
+  const applySuggestion = () => {
+    setPartNumberTouched(false);
+    setForm({ ...form, partNumber: suggestion });
+  };
+
+  useEffect(() => {
+    if (initial || !form.brandId) {
+      setSuggestion('');
+      return;
+    }
+    const requestId = ++requestIdRef.current;
+    setSuggesting(true);
+    suggestPartNumber(form.brandId, form.categoryId || undefined)
+      .then(({ partNumber }) => {
+        if (requestId !== requestIdRef.current) return;
+        setSuggestion(partNumber);
+        if (!partNumberTouched) setForm((f) => ({ ...f, partNumber }));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (requestId === requestIdRef.current) setSuggesting(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.brandId, form.categoryId, initial]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,14 +99,34 @@ export default function ProductForm({ brands, categories, suppliers = [], initia
       )}
 
       <div>
-        <label className={labelClass}>Part Number</label>
+        <div className="mb-1 flex items-center justify-between">
+          <label className="text-sm font-medium text-muted">Part Number</label>
+          {!initial && suggesting && (
+            <span className="text-xs text-muted">Suggesting...</span>
+          )}
+          {!initial && !suggesting && suggestion && suggestion !== form.partNumber && (
+            <button
+              type="button"
+              onClick={applySuggestion}
+              className="text-xs font-medium text-amber-600 hover:underline dark:text-amber-400"
+            >
+              Use suggested: {suggestion}
+            </button>
+          )}
+        </div>
         <input
           value={form.partNumber}
-          onChange={handleChange('partNumber')}
+          onChange={handlePartNumberChange}
           className={inputClass}
+          placeholder={!initial ? 'Select a brand to get a suggestion' : undefined}
           required
           disabled={!!initial}
         />
+        {!initial && (
+          <p className="mt-1 text-xs text-muted">
+            Auto-suggested from brand &amp; category — feel free to edit it.
+          </p>
+        )}
       </div>
 
       <div>
