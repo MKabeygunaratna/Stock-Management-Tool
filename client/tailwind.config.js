@@ -62,6 +62,11 @@ export default {
           '0%': { backgroundPosition: '-400px 0' },
           '100%': { backgroundPosition: '400px 0' },
         },
+        loaderBar: {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(60%)' },
+          '100%': { transform: 'translateX(250%)' },
+        },
       },
       animation: {
         // Note: no `forwards`/`both` fill-mode on these. A fill-mode that holds
@@ -82,6 +87,7 @@ export default {
         ring: 'ring 2.2s ease-in-out infinite',
         shake: 'shake 0.4s ease-in-out',
         shimmer: 'shimmer 1.6s linear infinite',
+        'loader-bar': 'loaderBar 1.4s ease-in-out infinite',
       },
     },
   },

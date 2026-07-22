@@ -34,7 +34,7 @@ export default function Login() {
     try {
       await login(username, password);
       setSignedIn(true);
-      setTimeout(() => navigate("/"), 900);
+      setTimeout(() => navigate("/"), 1800);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
       setSubmitting(false);
