@@ -145,7 +145,13 @@ export default function Suppliers() {
             {suppliers.length === 0 && (
               <tr>
                 <td colSpan={5}>
-                  <EmptyState icon={Truck} message="No suppliers found" />
+                  <EmptyState
+                    icon={Truck}
+                    message={search ? 'No suppliers match your search.' : 'No suppliers yet — add one to start tracking purchases and payments.'}
+                    action={!search && (
+                      <Button onClick={openCreate}><Plus size={16} /> Add Supplier</Button>
+                    )}
+                  />
                 </td>
               </tr>
             )}
@@ -160,6 +166,7 @@ export default function Suppliers() {
 
       <ConfirmDialog
         open={!!deleteTarget}
+        confirmLabel="Delete supplier"
         message={`Delete "${deleteTarget?.name}"? Suppliers with stock or payment history will be disabled instead of deleted.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

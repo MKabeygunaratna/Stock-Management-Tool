@@ -41,6 +41,8 @@ export default function Products() {
   const [editing, setEditing] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const hasFilters = !!(search || brandId || categoryId || lowStock);
+
   const loadProducts = useCallback(() => {
     setLoading(true);
     getProducts({
@@ -211,7 +213,13 @@ export default function Products() {
               {products.length === 0 && (
                 <tr>
                   <td colSpan={isAdmin ? 9 : 8}>
-                    <EmptyState icon={Package} message="No parts found" />
+                    <EmptyState
+                      icon={Package}
+                      message={hasFilters ? 'No parts match your search or filters.' : 'No parts yet — add your first part to start tracking inventory.'}
+                      action={!hasFilters && isAdmin && (
+                        <Button onClick={openCreate}><Plus size={16} /> Add Part</Button>
+                      )}
+                    />
                   </td>
                 </tr>
               )}
@@ -234,6 +242,7 @@ export default function Products() {
 
       <ConfirmDialog
         open={!!deleteTarget}
+        confirmLabel="Delete part"
         message={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

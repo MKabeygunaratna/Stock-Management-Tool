@@ -163,6 +163,7 @@ export default function Users() {
 
       <ConfirmDialog
         open={!!disableTarget}
+        confirmLabel="Disable user"
         message={`Disable "${disableTarget?.fullName}"? They will no longer be able to log in.`}
         onConfirm={handleDisable}
         onCancel={() => setDisableTarget(null)}
@@ -170,7 +171,7 @@ export default function Users() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Delete user"
+        confirmLabel="Delete user"
         message={`Permanently delete "${deleteTarget?.fullName}"? This cannot be undone. Users with existing stock movements or invoices cannot be deleted — disable them instead.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

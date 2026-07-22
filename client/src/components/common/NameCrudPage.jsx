@@ -125,7 +125,10 @@ export default function NameCrudPage({ title, icon, api }) {
                 <td colSpan={isAdmin ? 2 : 1}>
                   <EmptyState
                     icon={icon}
-                    message={`No ${title.toLowerCase()} yet`}
+                    message={`No ${title.toLowerCase()} yet — add your first ${title.slice(0, -1).toLowerCase()} to get started.`}
+                    action={isAdmin && (
+                      <Button onClick={openCreate}><Plus size={16} /> Add {title.slice(0, -1)}</Button>
+                    )}
                   />
                 </td>
               </tr>
@@ -173,6 +176,7 @@ export default function NameCrudPage({ title, icon, api }) {
 
       <ConfirmDialog
         open={!!deleteTarget}
+        confirmLabel={`Delete ${title.slice(0, -1)}`}
         message={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}

@@ -147,7 +147,13 @@ export default function Customers() {
             {customers.length === 0 && (
               <tr>
                 <td colSpan={6}>
-                  <EmptyState icon={Users2} message="No customers found" />
+                  <EmptyState
+                    icon={Users2}
+                    message={search ? 'No customers match your search.' : 'No customers yet — add one to start tracking credit accounts.'}
+                    action={!search && (
+                      <Button onClick={openCreate}><Plus size={16} /> Add Customer</Button>
+                    )}
+                  />
                 </td>
               </tr>
             )}
@@ -162,6 +168,7 @@ export default function Customers() {
 
       <ConfirmDialog
         open={!!deleteTarget}
+        confirmLabel="Delete customer"
         message={`Delete "${deleteTarget?.name}"? Customers with invoice or payment history will be disabled instead of deleted.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
