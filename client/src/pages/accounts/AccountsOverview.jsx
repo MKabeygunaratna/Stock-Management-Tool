@@ -14,7 +14,7 @@ import PageHeader from '../../components/common/PageHeader';
 import Spinner from '../../components/common/Spinner';
 import StatCard from '../../components/common/StatCard';
 
-const inputClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
+const inputClass = 'rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
 
 const getTooltipStyle = (theme) => ({
   contentStyle: theme === 'dark'
@@ -66,7 +66,7 @@ export default function AccountsOverview() {
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
       {overdueCount > 0 && (
-        <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+        <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="shrink-0" />
             <span>
@@ -123,7 +123,7 @@ export default function AccountsOverview() {
         )}
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-sm font-semibold text-foreground">Monthly Profit &amp; Loss</h2>

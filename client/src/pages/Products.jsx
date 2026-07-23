@@ -123,20 +123,20 @@ export default function Products() {
         )}
       />
 
-      <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="relative min-w-[220px] flex-1">
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input
             placeholder="Search by name or part number"
             value={search}
             onChange={(e) => { setPage(1); setSearch(e.target.value); }}
-            className="w-full rounded-md border border-input bg-surface-muted/50 py-2.5 pl-9 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="w-full rounded-xl border border-input bg-surface-muted/50 py-2.5 pl-9 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
         </div>
         <select
           value={brandId}
           onChange={(e) => { setPage(1); setBrandId(e.target.value); }}
-          className="min-w-[160px] rounded-md border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
+          className="min-w-[160px] rounded-xl border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
         >
           <option value="">All Brands</option>
           {brands.map((b) => (
@@ -146,7 +146,7 @@ export default function Products() {
         <select
           value={categoryId}
           onChange={(e) => { setPage(1); setCategoryId(e.target.value); }}
-          className="min-w-[160px] rounded-md border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
+          className="min-w-[160px] rounded-xl border border-input bg-surface-muted/50 px-3 py-2.5 text-sm text-foreground focus:border-amber-500 focus:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-amber-500"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -166,7 +166,7 @@ export default function Products() {
 
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         {loading ? (
           <Spinner label="Loading parts..." />
         ) : (

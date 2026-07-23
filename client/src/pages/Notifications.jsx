@@ -39,7 +39,7 @@ export default function Notifications() {
         }
       />
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         {!enabled ? (
           <EmptyState
             icon={Bell}

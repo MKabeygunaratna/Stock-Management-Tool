@@ -54,7 +54,7 @@ export default function NotificationBell() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Notifications"
-        className="relative inline-flex items-center justify-center rounded-md p-2 text-muted hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="relative inline-flex items-center justify-center rounded-xl p-2 text-muted hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <Bell size={18} className={count > 0 ? 'animate-ring' : ''} />
         {count > 0 && (
@@ -65,7 +65,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 origin-top-right animate-scale-in rounded-lg border border-border bg-card shadow-xl shadow-black/20">
+        <div className="absolute right-0 z-50 mt-2 w-80 origin-top-right animate-scale-in rounded-2xl border border-border bg-card shadow-xl shadow-black/20">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h3 className="text-sm font-semibold text-foreground">Low Stock Alerts</h3>
             {enabled && <span className="text-xs text-muted">{count} item{count === 1 ? '' : 's'}</span>}

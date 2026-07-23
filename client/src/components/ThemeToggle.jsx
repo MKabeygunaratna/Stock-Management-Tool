@@ -16,7 +16,7 @@ export default function ThemeToggle({ className = "" }) {
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`inline-flex items-center justify-center rounded-md p-2 text-muted hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
+      className={`inline-flex items-center justify-center rounded-xl p-2 text-muted hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
     >
       <Sun
         size={18}

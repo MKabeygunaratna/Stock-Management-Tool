@@ -10,7 +10,7 @@ import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
 import Spinner from '../components/common/Spinner';
 
-const inputClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
+const inputClass = 'rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
 
 export default function Invoices() {
   const { showToast } = useToast();
@@ -83,7 +83,7 @@ export default function Invoices() {
 
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">
@@ -137,7 +137,7 @@ export default function Invoices() {
         {viewLoading && <Spinner label="Loading invoice..." />}
         {!viewLoading && viewInvoice?.movements && (
           <div className="animate-fade-in space-y-5">
-            <div className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface-muted p-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-surface-muted p-4 sm:grid-cols-4">
               <div className="flex items-start gap-2.5">
                 <Calendar size={16} className="mt-0.5 shrink-0 text-amber-500" />
                 <div>
@@ -170,7 +170,7 @@ export default function Invoices() {
 
             <div>
               <p className="mb-2 text-sm font-semibold text-foreground">Items ({viewInvoice.movements.length})</p>
-              <div className="max-h-[22rem] overflow-auto rounded-lg border border-border">
+              <div className="max-h-[22rem] overflow-auto rounded-2xl border border-border">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border text-left text-muted">
@@ -206,7 +206,7 @@ export default function Invoices() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-muted p-4">
+            <div className="flex items-center justify-between rounded-2xl border border-border bg-surface-muted p-4">
               <p className="text-base font-semibold text-foreground">Total: {formatCurrency(viewInvoice.totalAmount)}</p>
               <Button type="button" variant="secondary" onClick={() => handleDownload(viewInvoice)} disabled={downloadingId === viewInvoice.id}>
                 {downloadingId === viewInvoice.id ? 'Downloading...' : 'Download PDF'}

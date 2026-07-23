@@ -23,26 +23,26 @@ export default function Navbar({ onMenuClick }) {
     .toUpperCase();
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-card px-3 sm:px-6">
-      <div className="flex items-center gap-2">
+    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-3 sm:px-6">
+      <div className="flex items-center gap-2.5">
         <button
           onClick={onMenuClick}
-          className="mr-1 rounded-md p-1.5 text-muted hover:bg-surface-muted md:hidden"
+          className="mr-1 rounded-xl p-1.5 text-muted hover:bg-surface-muted md:hidden"
         >
           <Menu size={20} />
         </button>
         <img
           src={logo}
           alt="Nihon Auto Enterprises"
-          className="h-8 w-auto rounded bg-white px-1.5 py-1"
+          className="h-9 w-auto rounded-xl bg-white px-1.5 py-1"
         />
         <span className="hidden font-semibold text-foreground sm:inline">
           Spare Parts Inventory
         </span>
       </div>
       <div className="flex items-center gap-2 text-sm sm:gap-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-foreground">
+        <div className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 sm:bg-surface-muted">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-600 dark:text-amber-400">
             {initials}
           </span>
           <span className="hidden text-muted sm:inline">

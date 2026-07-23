@@ -8,7 +8,7 @@ import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
 import StatCard from '../../components/common/StatCard';
 
-const inputClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
+const inputClass = 'rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none';
 
 export default function InvoiceProfitLoss() {
   const [searchParams] = useSearchParams();
@@ -80,7 +80,7 @@ export default function InvoiceProfitLoss() {
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">

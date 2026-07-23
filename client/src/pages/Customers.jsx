@@ -111,13 +111,13 @@ export default function Customers() {
           placeholder="Search by name, company, or phone"
           value={search}
           onChange={(e) => { setPage(1); setSearch(e.target.value); }}
-          className="w-full rounded-md border border-input bg-surface-muted py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
+          className="w-full rounded-xl border border-input bg-surface-muted py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
         />
       </div>
 
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">
@@ -178,7 +178,7 @@ export default function Customers() {
         {statementLoading && <Spinner label="Loading statement..." />}
         {!statementLoading && statement && (
           <div className="animate-fade-in space-y-5">
-            <div className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface-muted p-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-surface-muted p-4 sm:grid-cols-3">
               <div className="flex items-start gap-2.5">
                 <Receipt size={16} className="mt-0.5 shrink-0 text-amber-500" />
                 <div>
@@ -204,7 +204,7 @@ export default function Customers() {
 
             <div>
               <p className="mb-2 text-sm font-semibold text-foreground">Ledger ({statement.ledger.length})</p>
-              <div className="max-h-[22rem] overflow-auto rounded-lg border border-border">
+              <div className="max-h-[22rem] overflow-auto rounded-2xl border border-border">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border text-left text-muted">
@@ -240,7 +240,7 @@ export default function Customers() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-muted p-4">
+            <div className="flex items-center justify-between rounded-2xl border border-border bg-surface-muted p-4">
               <p className="text-base font-semibold text-foreground">Balance Owed: <span className={balanceTone(statement.balance)}>{formatCurrency(statement.balance)}</span></p>
               <Button type="button" variant="success" onClick={() => setPaymentModalOpen(true)}>
                 Record Payment

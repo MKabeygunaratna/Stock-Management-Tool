@@ -54,7 +54,7 @@ export default function OverduePayments() {
             <StatCard icon={ListChecks} label="Overdue Balances" value={combined.length} tone={combined.length > 0 ? 'text-red-600 dark:text-red-400' : ''} />
           </div>
 
-          <div className="rounded-lg border border-border bg-card shadow-sm">
+          <div className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="overflow-x-auto"><table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted">

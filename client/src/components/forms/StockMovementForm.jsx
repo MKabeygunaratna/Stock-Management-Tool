@@ -7,7 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import Button from '../common/Button';
 
 const inputClass =
-  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
+  'w-full rounded-xl border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
 const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 export default function StockMovementForm({ onSubmit }) {
@@ -109,10 +109,10 @@ export default function StockMovementForm({ onSubmit }) {
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
       {error && (
-        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 lg:col-span-3">{error}</div>
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 lg:col-span-3">{error}</div>
       )}
 
-      <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:col-span-2">
+      <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
         <div>
           <label className={labelClass}>Part</label>
           <input
@@ -122,7 +122,7 @@ export default function StockMovementForm({ onSubmit }) {
             className={inputClass}
           />
           {!selected && search && options.length > 0 && (
-            <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
+            <div className="mt-1 max-h-48 overflow-y-auto rounded-xl border border-input bg-card shadow-lg">
               {options.map((p) => (
                 <button
                   type="button"
@@ -175,7 +175,7 @@ export default function StockMovementForm({ onSubmit }) {
         </div>
       </div>
 
-      <div className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm lg:sticky lg:top-4">
+      <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm lg:sticky lg:top-4">
         <div>
           <label className={labelClass}>Supplier (optional)</label>
           <select
@@ -197,7 +197,7 @@ export default function StockMovementForm({ onSubmit }) {
               <button
                 type="button"
                 onClick={() => setPaidAmount(totalCost > 0 ? totalCost.toFixed(2) : '')}
-                className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
                   totalCost > 0 && remaining <= 0.005
                     ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm'
                     : 'border-input bg-surface-muted text-muted hover:text-foreground'
@@ -208,7 +208,7 @@ export default function StockMovementForm({ onSubmit }) {
               <button
                 type="button"
                 onClick={() => setPaidAmount('0')}
-                className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
                   paidNum === 0
                     ? 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm'
                     : 'border-input bg-surface-muted text-muted hover:text-foreground'

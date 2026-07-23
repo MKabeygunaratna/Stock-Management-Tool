@@ -67,10 +67,10 @@ function NavItem({ to, end, label, icon: Icon, onNavigate }) {
       end={end}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `group flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-all duration-150 ${
+        `group flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150 ${
           isActive
-            ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-            : "border-transparent text-muted hover:translate-x-0.5 hover:bg-surface-muted hover:text-foreground"
+            ? "bg-amber-500 text-zinc-950 shadow-sm shadow-amber-500/30"
+            : "text-muted hover:translate-x-0.5 hover:bg-surface-muted hover:text-foreground"
         }`
       }
     >
@@ -97,7 +97,7 @@ function NavGroup({ label, icon: Icon, items, onNavigate }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+        className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
           hasActiveChild ? "text-amber-600 dark:text-amber-400" : "text-muted hover:bg-surface-muted hover:text-foreground"
         }`}
       >
@@ -131,7 +131,7 @@ export default function Sidebar({ open, onClose }) {
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 max-w-[85vw] shrink-0 flex-col border-r border-border bg-card/95 shadow-sm transition-transform duration-300 ease-out md:static md:max-w-none md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 max-w-[85vw] shrink-0 flex-col border-r border-border bg-card/95 shadow-sm shadow-black/5 transition-transform duration-300 ease-out md:static md:max-w-none md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

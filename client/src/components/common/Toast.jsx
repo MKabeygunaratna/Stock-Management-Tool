@@ -10,7 +10,7 @@ export default function Toast({ message, type = 'success', onDismiss }) {
 
   return (
     <div
-      className={`flex w-80 animate-slide-up-in items-start gap-2 rounded-md border ${style.border} bg-card px-4 py-3 text-sm text-foreground shadow-lg shadow-black/30`}
+      className={`flex w-80 animate-slide-up-in items-start gap-2 rounded-xl border ${style.border} bg-card px-4 py-3 text-sm text-foreground shadow-lg shadow-black/30`}
     >
       {style.icon}
       <p className="flex-1">{message}</p>

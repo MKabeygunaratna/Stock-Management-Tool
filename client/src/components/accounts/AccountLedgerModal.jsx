@@ -55,7 +55,7 @@ export default function AccountLedgerModal({ target, onClose, onChanged }) {
         {loading && <Spinner label="Loading statement..." />}
         {!loading && detail && (
           <div className="animate-fade-in space-y-5">
-            <div className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface-muted p-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-surface-muted p-4 sm:grid-cols-3">
               <div className="flex items-start gap-2.5">
                 <Receipt size={16} className="mt-0.5 shrink-0 text-amber-500" />
                 <div>
@@ -83,7 +83,7 @@ export default function AccountLedgerModal({ target, onClose, onChanged }) {
 
             <div>
               <p className="mb-2 text-sm font-semibold text-foreground">Ledger ({detail.ledger.length})</p>
-              <div className="max-h-[22rem] overflow-auto rounded-lg border border-border">
+              <div className="max-h-[22rem] overflow-auto rounded-2xl border border-border">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border text-left text-muted">
@@ -119,7 +119,7 @@ export default function AccountLedgerModal({ target, onClose, onChanged }) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-muted p-4">
+            <div className="flex items-center justify-between rounded-2xl border border-border bg-surface-muted p-4">
               <p className="text-base font-semibold text-foreground">Balance: <span className={balanceTone(detail.balance)}>{formatCurrency(detail.balance)}</span></p>
               <Button type="button" variant="success" onClick={() => setPaymentModalOpen(true)}>
                 Record Payment

@@ -4,7 +4,7 @@ import EmptyState from '../common/EmptyState';
 
 export default function OutstandingTable({ icon: Icon, title, subtitle, rows, emptyMessage, onView }) {
   return (
-    <div className="rounded-lg border border-border bg-card shadow-sm">
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="border-b border-border px-4 py-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Icon size={14} className="text-amber-500" />

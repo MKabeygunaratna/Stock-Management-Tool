@@ -38,9 +38,9 @@ function QuickAction({ to, label, icon: Icon }) {
   return (
     <Link
       to={to}
-      className="group flex min-w-[7.5rem] flex-1 flex-col items-center gap-2 rounded-lg border border-border bg-card px-3 py-3 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-amber-500/40 hover:shadow-md"
+      className="group flex min-w-[7.5rem] flex-1 flex-col items-center gap-2 rounded-2xl border border-border bg-card px-3 py-3 text-center shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-amber-500/40 hover:shadow-md"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 transition-transform duration-150 group-hover:scale-110">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 transition-transform duration-150 group-hover:scale-110">
         <Icon size={17} />
       </span>
       <span className="text-xs font-medium text-foreground">{label}</span>
@@ -86,6 +86,17 @@ export default function Dashboard() {
       + finance.payables.filter((p) => p.daysOutstanding >= OVERDUE_DAYS).length
     : 0;
 
+  const stockDistribution = data
+    ? (() => {
+        const total = data.stockByBrand.reduce((sum, b) => sum + b.totalValue, 0);
+        if (total <= 0) return [];
+        return [...data.stockByBrand]
+          .sort((a, b) => b.totalValue - a.totalValue)
+          .slice(0, 5)
+          .map((b) => ({ ...b, percent: Math.round((b.totalValue / total) * 100) }));
+      })()
+    : [];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader icon={LayoutDashboard} title="Dashboard" subtitle="Today's snapshot across stock, sales, and accounts" />
@@ -96,7 +107,7 @@ export default function Dashboard() {
       {data && (
         <>
           {data.lowStockCount > 0 && showLowStockBanner && (
-            <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+            <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span>
@@ -118,7 +129,7 @@ export default function Dashboard() {
           )}
 
           {isAdmin && overdueCount > 0 && showOverdueBanner && (
-            <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            <div className="flex animate-slide-down flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span>
@@ -155,6 +166,27 @@ export default function Dashboard() {
               <StatCard icon={Receipt} label="Invoices Issued" value={data.totalInvoices} />
             </div>
           </div>
+
+          {stockDistribution.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5 sm:p-5">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">Stock Value Distribution</h2>
+              <p className="mb-5 text-xs text-muted">Share of total on-hand stock value held by each brand</p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                {stockDistribution.map((b, i) => (
+                  <div key={b.brandName} className="flex flex-col items-center gap-2">
+                    <div className="flex h-24 w-full items-end justify-center rounded-xl bg-surface-muted/60 p-1.5">
+                      <div
+                        className={`w-full rounded-lg ${i === 0 ? 'bg-amber-500' : 'bg-amber-500/40'}`}
+                        style={{ height: `${Math.max(b.percent, 4)}%` }}
+                      />
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{b.percent}%</p>
+                    <p className="truncate text-xs text-muted" title={b.brandName}>{b.brandName}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {isAdmin && (finance || pnl) && (
             <div>
@@ -194,7 +226,7 @@ export default function Dashboard() {
           )}
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">Stock Value by Brand</h2>
               <p className="mb-3 text-xs text-muted">Cost-basis value of inventory currently on hand</p>
               <ResponsiveContainer width="100%" height={280}>
@@ -207,7 +239,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-black/5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">Sales Revenue by Brand</h2>
               <p className="mb-3 text-xs text-muted">Money earned from stock-outs (invoiced sales)</p>
               <ResponsiveContainer width="100%" height={280}>
@@ -221,7 +253,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-card shadow-sm">
+          <div className="rounded-2xl border border-border bg-card shadow-sm shadow-black/5">
             <h2 className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold text-foreground">
               <History size={14} className="text-muted" />
               Recent Movements

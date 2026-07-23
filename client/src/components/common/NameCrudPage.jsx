@@ -85,7 +85,7 @@ export default function NameCrudPage({ title, icon, api }) {
 
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-border bg-card/95 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card/95 shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">
@@ -146,7 +146,7 @@ export default function NameCrudPage({ title, icon, api }) {
       >
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError && (
-            <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
               {formError}
             </div>
           )}
@@ -157,7 +157,7 @@ export default function NameCrudPage({ title, icon, api }) {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-xl border border-input bg-surface-muted px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               required
             />
           </div>

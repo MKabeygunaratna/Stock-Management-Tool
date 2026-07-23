@@ -6,7 +6,7 @@ import Pagination from '../components/common/Pagination';
 import PageHeader from '../components/common/PageHeader';
 import EmptyState from '../components/common/EmptyState';
 
-const selectClass = 'rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none';
+const selectClass = 'rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-amber-500 focus:outline-none';
 
 export default function StockHistory() {
   const [items, setItems] = useState([]);
@@ -62,7 +62,7 @@ export default function StockHistory() {
 
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="rounded-2xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted">

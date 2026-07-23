@@ -12,14 +12,14 @@ export default function Pagination({ page, totalPages, onChange }) {
         <button
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
-          className="flex items-center gap-1 rounded-md border border-input px-3 py-1 text-muted hover:bg-surface-muted disabled:opacity-40"
+          className="flex items-center gap-1 rounded-xl border border-input px-3 py-1 text-muted hover:bg-surface-muted disabled:opacity-40"
         >
           <ChevronLeft size={14} /> Previous
         </button>
         <button
           disabled={page >= totalPages}
           onClick={() => onChange(page + 1)}
-          className="flex items-center gap-1 rounded-md border border-input px-3 py-1 text-muted hover:bg-surface-muted disabled:opacity-40"
+          className="flex items-center gap-1 rounded-xl border border-input px-3 py-1 text-muted hover:bg-surface-muted disabled:opacity-40"
         >
           Next <ChevronRight size={14} />
         </button>

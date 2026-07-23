@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Button from '../common/Button';
 
 const inputClass =
-  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
+  'w-full rounded-xl border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
 const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 export default function RecordPaymentForm({ onSubmit, onCancel }) {
@@ -38,7 +38,7 @@ export default function RecordPaymentForm({ onSubmit, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

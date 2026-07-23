@@ -14,7 +14,7 @@ import Spinner from '../components/common/Spinner';
 import NewPurchaseItemForm from '../components/forms/NewPurchaseItemForm';
 
 const inputClass =
-  'w-full rounded-md border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
+  'w-full rounded-xl border border-input bg-surface-muted px-3 py-2 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500';
 const labelClass = 'mb-1 block text-sm font-medium text-muted';
 
 const conditionLabel = (condition) => (condition === 'RECONDITION' ? 'Recondition' : 'Brand New');
@@ -261,9 +261,9 @@ export default function Purchases() {
       </div>
 
       {activeTab === 'new' && (
-      <form onSubmit={handleSubmit} className="animate-fade-in space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="animate-fade-in space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
         {error && (
-          <div className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">{error}</div>
         )}
 
         {lowStockItems.length > 0 && (
@@ -294,7 +294,7 @@ export default function Purchases() {
               className={inputClass}
             />
             {search && options.length > 0 && (
-              <div className="mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-card shadow-lg">
+              <div className="mt-1 max-h-48 overflow-y-auto rounded-xl border border-input bg-card shadow-lg">
                 {options.map((p) => (
                   <button
                     type="button"
@@ -318,7 +318,7 @@ export default function Purchases() {
         </div>
 
         {cart.length > 0 && (
-          <div className="rounded-md border border-border">
+          <div className="rounded-xl border border-border">
             <div className="overflow-x-auto"><table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted">
@@ -350,7 +350,7 @@ export default function Purchases() {
                         min="1"
                         value={line.quantity}
                         onChange={(e) => updateLine(line.key, 'quantity', Number(e.target.value))}
-                        className="w-20 rounded-md border border-input bg-surface-muted px-2 py-1 text-sm text-foreground focus:border-amber-500 focus:outline-none"
+                        className="w-20 rounded-xl border border-input bg-surface-muted px-2 py-1 text-sm text-foreground focus:border-amber-500 focus:outline-none"
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -360,7 +360,7 @@ export default function Purchases() {
                         step="0.01"
                         value={line.estimatedCost}
                         onChange={(e) => updateLine(line.key, 'estimatedCost', e.target.value)}
-                        className="w-24 rounded-md border border-input bg-surface-muted px-2 py-1 text-sm text-foreground focus:border-amber-500 focus:outline-none"
+                        className="w-24 rounded-xl border border-input bg-surface-muted px-2 py-1 text-sm text-foreground focus:border-amber-500 focus:outline-none"
                       />
                     </td>
                     <td className="px-3 py-2 text-muted">{formatCurrency((Number(line.quantity) || 0) * (Number(line.estimatedCost) || 0))}</td>
@@ -426,7 +426,7 @@ export default function Purchases() {
                 placeholder="Search by name or part number"
                 value={stockSearch}
                 onChange={(e) => { setStockPage(1); setStockSearch(e.target.value); }}
-                className="w-full rounded-md border border-input bg-surface-muted py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
+                className="w-full rounded-xl border border-input bg-surface-muted py-2 pl-8 pr-3 text-sm text-foreground placeholder-muted focus:border-amber-500 focus:outline-none"
               />
             </div>
             <label className="flex items-center gap-2 text-sm text-muted">
@@ -440,7 +440,7 @@ export default function Purchases() {
             </label>
           </div>
 
-          <div className="rounded-md border border-border">
+          <div className="rounded-xl border border-border">
             {stockLoading ? (
               <Spinner label="Loading stock..." />
             ) : (
@@ -474,7 +474,7 @@ export default function Purchases() {
                           <button
                             type="button"
                             onClick={() => addFromStockModal(p)}
-                            className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+                            className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
                           >
                             + Add
                           </button>
@@ -498,7 +498,7 @@ export default function Purchases() {
       </Modal>
 
       {activeTab === 'history' && (
-      <div className="animate-fade-in rounded-lg border border-border bg-card shadow-sm">
+      <div className="animate-fade-in rounded-2xl border border-border bg-card shadow-sm">
         <h2 className="border-b border-border px-4 py-3 text-sm font-semibold text-foreground">Purchase Order History</h2>
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead>
@@ -552,7 +552,7 @@ export default function Purchases() {
         {viewLoading && <Spinner label="Loading order..." />}
         {!viewLoading && viewOrder?.items && (
           <div className="animate-fade-in space-y-5">
-            <div className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface-muted p-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-surface-muted p-4 sm:grid-cols-4">
               <div className="flex items-start gap-2.5">
                 <Calendar size={16} className="mt-0.5 shrink-0 text-amber-500" />
                 <div>
@@ -585,7 +585,7 @@ export default function Purchases() {
 
             <div>
               <p className="mb-2 text-sm font-semibold text-foreground">Items ({viewOrder.items.length})</p>
-              <div className="max-h-[22rem] overflow-auto rounded-lg border border-border">
+              <div className="max-h-[22rem] overflow-auto rounded-2xl border border-border">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border text-left text-muted">
@@ -618,7 +618,7 @@ export default function Purchases() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border bg-surface-muted p-4">
+            <div className="flex items-center justify-between rounded-2xl border border-border bg-surface-muted p-4">
               <p className="text-base font-semibold text-foreground">Estimated Total: {formatCurrency(viewOrder.totalEstimatedCost)}</p>
               <Button type="button" variant="secondary" onClick={() => handleDownload(viewOrder)} disabled={downloadingId === viewOrder.id}>
                 {downloadingId === viewOrder.id ? 'Downloading...' : 'Download PDF'}
